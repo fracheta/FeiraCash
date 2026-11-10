@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { calculateChange, calculateKPIs, filterTransactions, generateCSV, Transaction } from './feiracash.ts';
+import { calculateChange, calculateKPIs, filterTransactions, generateCSV, Transaction, FiadoRecord, calculateFiadoKPIs, filterFiados } from './feiracash.ts';
 
 test('calculateChange returns correct change and denominations', () => {
   const result = calculateChange(23.50, 50.00);
@@ -67,3 +67,34 @@ test('generateCSV generates valid CSV text', () => {
   assert.ok(csv.includes('15,50'));
   assert.ok(csv.includes('PIX'));
 });
+
+test('calculateFiadoKPIs correctly aggregates pending and paid debts', () => {
+  const fiados: FiadoRecord[] = [
+    { id: 'FD-1', clienteNome: 'Seu Zé', valor: 45.0, status: 'pendente', date: '2026-11-10T10:00:00Z', descricao: '3x Pastel' },
+    { id: 'FD-2', clienteNome: 'Dona Maria', valor: 60.0, status: 'pendente', date: '2026-11-10T11:00:00Z', descricao: '2x Queijo' },
+    { id: 'FD-3', clienteNome: 'Seu Zé', valor: 15.0, status: 'pendente', date: '2026-11-10T12:00:00Z', descricao: '1x Doce' },
+    { id: 'FD-4', clienteNome: 'Jorge', valor: 30.0, status: 'pago', date: '2026-11-09T10:00:00Z', descricao: 'Caldo' }
+  ];
+
+  const kpis = calculateFiadoKPIs(fiados);
+  assert.equal(kpis.totalPendente, 120.0);
+  assert.equal(kpis.totalPago, 30.0);
+  assert.equal(kpis.clientesPendentes, 2); // Seu Zé and Dona Maria (unique)
+  assert.equal(kpis.countPendentes, 3);
+  assert.equal(kpis.countPagos, 1);
+});
+
+test('filterFiados filters by status and client query', () => {
+  const fiados: FiadoRecord[] = [
+    { id: 'FD-1', clienteNome: 'Seu Zé', clienteTelefone: '11999991111', valor: 45.0, status: 'pendente', date: '2026-11-10T10:00:00Z', descricao: 'Pastéis' },
+    { id: 'FD-2', clienteNome: 'Dona Maria', valor: 60.0, status: 'pago', date: '2026-11-10T11:00:00Z', descricao: 'Queijo' }
+  ];
+
+  const pendentes = filterFiados(fiados, { status: 'pendente' });
+  assert.equal(pendentes.length, 1);
+  assert.equal(pendentes[0].clienteNome, 'Seu Zé');
+
+  const buscaTel = filterFiados(fiados, { query: '99999' });
+  assert.equal(buscaTel.length, 1);
+});
+

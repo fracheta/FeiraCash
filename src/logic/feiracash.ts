@@ -157,3 +157,72 @@ export function generateCSV(transactions: Transaction[]): string {
   });
   return [headers.join(';'), ...rows].join('\r\n');
 }
+
+export interface FiadoRecord {
+  id: string;
+  clienteNome: string;
+  clienteTelefone?: string;
+  dataPrometida?: string; // YYYY-MM-DD
+  valor: number;
+  status: 'pendente' | 'pago';
+  date: string; // ISO
+  descricao: string;
+  items?: Array<{ name: string; quantity: number; unitPrice: number }>;
+  pagoEm?: string; // ISO
+  formaPagamentoQuitacao?: 'dinheiro' | 'pix' | 'debito' | 'credito' | 'outro';
+}
+
+export interface FiadoKPIs {
+  totalPendente: number;
+  totalPago: number;
+  clientesPendentes: number;
+  countPendentes: number;
+  countPagos: number;
+}
+
+export function calculateFiadoKPIs(fiados: FiadoRecord[]): FiadoKPIs {
+  let totalPendente = 0;
+  let totalPago = 0;
+  let countPendentes = 0;
+  let countPagos = 0;
+  const clientesSet = new Set<string>();
+
+  for (const f of fiados) {
+    if (f.status === 'pendente') {
+      totalPendente += f.valor;
+      countPendentes += 1;
+      clientesSet.add(f.clienteNome.toLowerCase().trim());
+    } else {
+      totalPago += f.valor;
+      countPagos += 1;
+    }
+  }
+
+  return {
+    totalPendente: Math.round(totalPendente * 100) / 100,
+    totalPago: Math.round(totalPago * 100) / 100,
+    clientesPendentes: clientesSet.size,
+    countPendentes,
+    countPagos
+  };
+}
+
+export function filterFiados(
+  fiados: FiadoRecord[],
+  filters: { status?: string; query?: string }
+): FiadoRecord[] {
+  return fiados.filter(f => {
+    if (filters.status && filters.status !== 'todos' && f.status !== filters.status) {
+      return false;
+    }
+    if (filters.query) {
+      const q = filters.query.toLowerCase().trim();
+      const matchNome = f.clienteNome.toLowerCase().includes(q);
+      const matchDesc = f.descricao.toLowerCase().includes(q);
+      const matchTel = f.clienteTelefone ? f.clienteTelefone.includes(q) : false;
+      if (!matchNome && !matchDesc && !matchTel) return false;
+    }
+    return true;
+  });
+}
+

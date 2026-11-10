@@ -177,16 +177,20 @@
 
         <!-- Desktop Navigation Tabs -->
         <nav class="hidden md:flex items-center gap-1 bg-slate-800/80 p-1.5 rounded-2xl border border-slate-700/60">
-          <button onclick="switchTab('dashboard')" id="btnTab-dashboard" class="tab-btn px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-150 flex items-center gap-2 bg-emerald-600 text-white shadow-sm">
+          <button onclick="switchTab('dashboard')" id="btnTab-dashboard" class="tab-btn px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-150 flex items-center gap-2 bg-emerald-600 text-white shadow-sm cursor-pointer">
             <i class="fa-solid fa-chart-pie"></i> Dashboard
           </button>
-          <button onclick="switchTab('pdv')" id="btnTab-pdv" class="tab-btn px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-150 flex items-center gap-2 text-slate-300 hover:text-white hover:bg-slate-700/50">
+          <button onclick="switchTab('pdv')" id="btnTab-pdv" class="tab-btn px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-150 flex items-center gap-2 text-slate-300 hover:text-white hover:bg-slate-700/50 cursor-pointer">
             <i class="fa-solid fa-basket-shopping"></i> PDV Rápido
           </button>
-          <button onclick="switchTab('extrato')" id="btnTab-extrato" class="tab-btn px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-150 flex items-center gap-2 text-slate-300 hover:text-white hover:bg-slate-700/50">
+          <button onclick="switchTab('apagar')" id="btnTab-apagar" class="tab-btn px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-150 flex items-center gap-2 text-slate-300 hover:text-white hover:bg-slate-700/50 cursor-pointer">
+            <i class="fa-solid fa-book-bookmark text-amber-400"></i> A Pagar
+            <span id="badgeFiadoCount" class="hidden px-1.5 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-500 text-slate-950">0</span>
+          </button>
+          <button onclick="switchTab('extrato')" id="btnTab-extrato" class="tab-btn px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-150 flex items-center gap-2 text-slate-300 hover:text-white hover:bg-slate-700/50 cursor-pointer">
             <i class="fa-solid fa-receipt"></i> Extrato
           </button>
-          <button onclick="switchTab('relatorios')" id="btnTab-relatorios" class="tab-btn px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-150 flex items-center gap-2 text-slate-300 hover:text-white hover:bg-slate-700/50">
+          <button onclick="switchTab('relatorios')" id="btnTab-relatorios" class="tab-btn px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-150 flex items-center gap-2 text-slate-300 hover:text-white hover:bg-slate-700/50 cursor-pointer">
             <i class="fa-solid fa-chart-line"></i> Relatórios
           </button>
         </nav>
@@ -242,6 +246,26 @@
             </button>
           </div>
         </div>
+      </div>
+
+      <!-- Alerta Dinâmico de Fiado / A Pagar Pendente -->
+      <div id="dashboardFiadoAlert" class="hidden p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-500/15 via-amber-500/10 to-amber-500/5 border border-amber-300 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-11 h-11 rounded-2xl bg-amber-500 text-slate-950 flex items-center justify-center text-lg font-bold shadow-xs">
+            <i class="fa-solid fa-book-bookmark"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h4 class="font-extrabold text-slate-900 text-sm sm:text-base">Contas Fiado Pendentes (A Receber)</h4>
+              <span class="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-amber-200 text-amber-900 border border-amber-300">Caderneta</span>
+            </div>
+            <p class="text-xs text-slate-600 mt-0.5" id="dashboardFiadoResumoTexto">Você tem contas fiado em aberto para receber.</p>
+          </div>
+        </div>
+        <button onclick="switchTab('apagar')" class="w-full sm:w-auto px-4 py-2 bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 font-bold text-xs rounded-xl shadow-sm transition-all whitespace-nowrap cursor-pointer flex items-center justify-center gap-1.5">
+          <span>Abrir Caderneta</span>
+          <i class="fa-solid fa-arrow-right"></i>
+        </button>
       </div>
 
       <!-- Grid de Indicadores Principais (KPIs) -->
@@ -458,7 +482,7 @@
         </div>
 
         <!-- Botão Cadastrar Novo Produto -->
-        <button onclick="openModalNovoProduto()" class="min-h-[42px] px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm rounded-xl shadow-sm transition-colors flex items-center justify-center gap-2 whitespace-nowrap">
+        <button id="btnAbrirModalNovoProduto" onclick="openModalNovoProduto()" class="min-h-[42px] px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm rounded-xl shadow-sm transition-colors flex items-center justify-center gap-2 whitespace-nowrap">
           <i class="fa-solid fa-plus"></i> Novo Produto
         </button>
       </div>
@@ -517,22 +541,26 @@
           <!-- Forma de Pagamento -->
           <div class="space-y-2 pt-1">
             <label class="block text-xs font-bold uppercase tracking-wider text-slate-600">Forma de Pagamento</label>
-            <div class="grid grid-cols-4 gap-2">
-              <button type="button" onclick="setPdvPaymentMethod('dinheiro')" id="pdvPayBtn-dinheiro" class="pdv-pay-btn active py-2.5 px-1 rounded-xl text-xs font-bold flex flex-col items-center justify-center gap-1 border border-emerald-500 bg-emerald-50 text-emerald-800 transition-all">
+            <div class="grid grid-cols-5 gap-1 sm:gap-2">
+              <button type="button" onclick="setPdvPaymentMethod('dinheiro')" id="pdvPayBtn-dinheiro" class="pdv-pay-btn active py-2 px-1 rounded-xl text-[10px] sm:text-xs font-bold flex flex-col items-center justify-center gap-1 border border-emerald-500 bg-emerald-50 text-emerald-800 transition-all cursor-pointer">
                 <i class="fa-solid fa-money-bill-wave text-base"></i>
                 <span>Dinheiro</span>
               </button>
-              <button type="button" onclick="setPdvPaymentMethod('pix')" id="pdvPayBtn-pix" class="pdv-pay-btn py-2.5 px-1 rounded-xl text-xs font-bold flex flex-col items-center justify-center gap-1 border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 transition-all">
+              <button type="button" onclick="setPdvPaymentMethod('pix')" id="pdvPayBtn-pix" class="pdv-pay-btn py-2 px-1 rounded-xl text-[10px] sm:text-xs font-bold flex flex-col items-center justify-center gap-1 border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 transition-all cursor-pointer">
                 <i class="fa-brands fa-pix text-base text-teal-600"></i>
                 <span>Pix</span>
               </button>
-              <button type="button" onclick="setPdvPaymentMethod('debito')" id="pdvPayBtn-debito" class="pdv-pay-btn py-2.5 px-1 rounded-xl text-xs font-bold flex flex-col items-center justify-center gap-1 border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 transition-all">
+              <button type="button" onclick="setPdvPaymentMethod('debito')" id="pdvPayBtn-debito" class="pdv-pay-btn py-2 px-1 rounded-xl text-[10px] sm:text-xs font-bold flex flex-col items-center justify-center gap-1 border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 transition-all cursor-pointer">
                 <i class="fa-solid fa-credit-card text-base text-blue-600"></i>
                 <span>Débito</span>
               </button>
-              <button type="button" onclick="setPdvPaymentMethod('credito')" id="pdvPayBtn-credito" class="pdv-pay-btn py-2.5 px-1 rounded-xl text-xs font-bold flex flex-col items-center justify-center gap-1 border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 transition-all">
+              <button type="button" onclick="setPdvPaymentMethod('credito')" id="pdvPayBtn-credito" class="pdv-pay-btn py-2 px-1 rounded-xl text-[10px] sm:text-xs font-bold flex flex-col items-center justify-center gap-1 border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 transition-all cursor-pointer">
                 <i class="fa-solid fa-credit-card text-base text-purple-600"></i>
                 <span>Crédito</span>
+              </button>
+              <button type="button" onclick="setPdvPaymentMethod('fiado')" id="pdvPayBtn-fiado" class="pdv-pay-btn py-2 px-1 rounded-xl text-[10px] sm:text-xs font-bold flex flex-col items-center justify-center gap-1 border border-slate-200 bg-slate-50 text-slate-700 hover:bg-amber-50 hover:border-amber-400 transition-all cursor-pointer">
+                <i class="fa-solid fa-book-bookmark text-base text-amber-500"></i>
+                <span class="font-extrabold text-amber-700">Fiado</span>
               </button>
             </div>
           </div>
@@ -541,7 +569,7 @@
           <div id="pdvPainelTroco" class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
             <div class="flex items-center justify-between">
               <label class="text-xs font-bold text-slate-700">Valor Recebido (R$)</label>
-              <button type="button" onclick="setPdvRecebidoExato()" class="text-[11px] text-emerald-600 font-bold hover:underline">
+              <button type="button" onclick="setPdvRecebidoExato()" class="text-[11px] text-emerald-600 font-bold hover:underline cursor-pointer">
                 Valor Exato
               </button>
             </div>
@@ -550,10 +578,10 @@
 
             <!-- Atalhos de valores rápidos -->
             <div class="flex items-center gap-1.5 flex-wrap">
-              <button type="button" onclick="setPdvRecebido(10)" class="px-2 py-0.5 text-xs font-semibold bg-white border border-slate-300 rounded-lg hover:bg-slate-100">R$10</button>
-              <button type="button" onclick="setPdvRecebido(20)" class="px-2 py-0.5 text-xs font-semibold bg-white border border-slate-300 rounded-lg hover:bg-slate-100">R$20</button>
-              <button type="button" onclick="setPdvRecebido(50)" class="px-2 py-0.5 text-xs font-semibold bg-white border border-slate-300 rounded-lg hover:bg-slate-100">R$50</button>
-              <button type="button" onclick="setPdvRecebido(100)" class="px-2 py-0.5 text-xs font-semibold bg-white border border-slate-300 rounded-lg hover:bg-slate-100">R$100</button>
+              <button type="button" onclick="setPdvRecebido(10)" class="px-2 py-0.5 text-xs font-semibold bg-white border border-slate-300 rounded-lg hover:bg-slate-100 cursor-pointer">R$10</button>
+              <button type="button" onclick="setPdvRecebido(20)" class="px-2 py-0.5 text-xs font-semibold bg-white border border-slate-300 rounded-lg hover:bg-slate-100 cursor-pointer">R$20</button>
+              <button type="button" onclick="setPdvRecebido(50)" class="px-2 py-0.5 text-xs font-semibold bg-white border border-slate-300 rounded-lg hover:bg-slate-100 cursor-pointer">R$50</button>
+              <button type="button" onclick="setPdvRecebido(100)" class="px-2 py-0.5 text-xs font-semibold bg-white border border-slate-300 rounded-lg hover:bg-slate-100 cursor-pointer">R$100</button>
             </div>
 
             <!-- Exibição do Troco -->
@@ -562,6 +590,33 @@
               <span id="pdvTrocoDisplay" class="text-lg font-extrabold text-emerald-800">R$ 0,00</span>
             </div>
             <div id="pdvTrocoNotasSugestao" class="text-[11px] text-emerald-700 font-medium"></div>
+          </div>
+
+          <!-- Painel Dinâmico para FIADO (A Pagar / Caderneta) -->
+          <div id="pdvPainelFiado" class="hidden p-3.5 rounded-xl bg-amber-50 border border-amber-300 space-y-2.5">
+            <div class="flex items-center justify-between text-amber-900">
+              <span class="text-xs font-bold flex items-center gap-1.5">
+                <i class="fa-solid fa-book-bookmark text-amber-600"></i> Conta Fiado (A Pagar pelo Cliente)
+              </span>
+              <span class="text-[10px] bg-amber-200 text-amber-900 font-extrabold px-2 py-0.5 rounded-full uppercase">Pendente</span>
+            </div>
+            <p class="text-[11px] text-amber-800 leading-tight">
+              A venda será anotada na aba <strong>A Pagar</strong> como fiado pendente até o cliente acertar a conta.
+            </p>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Nome do Cliente / Apelido *</label>
+              <input type="text" id="pdvFiadoClienteNome" placeholder="Ex.: Seu Zé da Barraca 4, Dona Cida" class="w-full px-3 py-2 border border-amber-300 rounded-xl text-xs font-bold text-slate-800 bg-white focus:outline-none focus:border-amber-500 shadow-2xs" />
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-[11px] font-bold text-slate-600 mb-1">Telefone / WhatsApp</label>
+                <input type="tel" id="pdvFiadoClienteTelefone" placeholder="(11) 99999-9999" class="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg text-xs bg-white focus:outline-none focus:border-amber-500" />
+              </div>
+              <div>
+                <label class="block text-[11px] font-bold text-slate-600 mb-1">Data Prometida (Opcional)</label>
+                <input type="date" id="pdvFiadoDataPrometida" class="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg text-xs bg-white focus:outline-none focus:border-amber-500" />
+              </div>
+            </div>
           </div>
 
           <!-- Botão de Finalizar Venda -->
@@ -686,6 +741,149 @@
     </section>
 
     <!-- ==========================================================
+         ABA 3: A PAGAR (CADERNETA DE FIADO)
+    ========================================================== -->
+    <section id="tab-apagar" class="tab-content space-y-6">
+      
+      <!-- Topo da Aba A Pagar -->
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center text-2xl font-bold shadow-xs">
+            <i class="fa-solid fa-book-bookmark"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h2 class="font-extrabold text-slate-800 text-lg">Contas a Pagar / Fiados</h2>
+              <span class="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">Caderneta</span>
+            </div>
+            <p class="text-xs text-slate-500">Controle de vendas fiado, clientes devedores, prazos e cobranças no WhatsApp.</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 w-full sm:w-auto">
+          <button onclick="openModalNovoFiadoManual()" class="flex-1 sm:flex-none px-4 py-2.5 bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs rounded-xl shadow-md transition-colors flex items-center justify-center gap-2 cursor-pointer">
+            <i class="fa-solid fa-plus"></i>
+            <span>Anotar Novo Fiado</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- KPIs da Caderneta de Fiado -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        
+        <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-amber-600">Total a Pagar (Pendente)</span>
+            <div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center text-xs">
+              <i class="fa-solid fa-clock"></i>
+            </div>
+          </div>
+          <div>
+            <h3 class="text-xl sm:text-2xl font-extrabold text-amber-600" id="fiadoKpiTotalPendente">R$ 0,00</h3>
+            <span class="text-[11px] text-slate-400 mt-0.5 block" id="fiadoKpiQtdPendentes">0 contas em aberto</span>
+          </div>
+        </div>
+
+        <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Clientes com Fiado</span>
+            <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center text-xs">
+              <i class="fa-solid fa-users"></i>
+            </div>
+          </div>
+          <div>
+            <h3 class="text-xl sm:text-2xl font-extrabold text-slate-800" id="fiadoKpiClientes">0</h3>
+            <span class="text-[11px] text-slate-400 mt-0.5 block">Clientes devedores</span>
+          </div>
+        </div>
+
+        <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-emerald-600">Total Já Quitado</span>
+            <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs">
+              <i class="fa-solid fa-check"></i>
+            </div>
+          </div>
+          <div>
+            <h3 class="text-xl sm:text-2xl font-extrabold text-emerald-600" id="fiadoKpiTotalPago">R$ 0,00</h3>
+            <span class="text-[11px] text-slate-400 mt-0.5 block" id="fiadoKpiQtdPagos">0 contas acertadas</span>
+          </div>
+        </div>
+
+        <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Total de Registros</span>
+            <div class="w-8 h-8 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center text-xs">
+              <i class="fa-solid fa-list-ol"></i>
+            </div>
+          </div>
+          <div>
+            <h3 class="text-xl sm:text-2xl font-extrabold text-slate-800" id="fiadoKpiTotalGeral">0</h3>
+            <span class="text-[11px] text-slate-400 mt-0.5 block">Histórico de caderneta</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Barra de Filtros e Busca da Caderneta -->
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+        <div class="grid grid-cols-1 sm:grid-cols-12 gap-3">
+          <div class="sm:col-span-7 relative">
+            <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+            <input type="text" id="fiadoBuscaInput" oninput="renderAPagar()" placeholder="Buscar por cliente, telefone ou item..." class="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-xl text-xs font-semibold focus:outline-none focus:border-amber-500" />
+          </div>
+          <div class="sm:col-span-5">
+            <select id="fiadoFiltroStatus" onchange="renderAPagar()" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs font-semibold focus:outline-none focus:border-amber-500 bg-white">
+              <option value="todos">Todos os Fiados</option>
+              <option value="pendente" selected>Apenas Pendentes (A Pagar)</option>
+              <option value="pago">Já Quitados / Pagos</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between text-xs text-slate-500 pt-1">
+          <span id="fiadoResumoContagem">Mostrando 0 registros de fiado</span>
+          <span id="fiadoResumoSoma" class="font-bold text-amber-700">Total pendente: R$ 0,00</span>
+        </div>
+      </div>
+
+      <!-- Tabela da Caderneta de Fiado -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase tracking-wider font-bold">
+              <tr>
+                <th class="py-3 px-4">Cliente & Contato</th>
+                <th class="py-3 px-4">Data da Compra</th>
+                <th class="py-3 px-4">Itens / Descrição</th>
+                <th class="py-3 px-4">Data Prometida</th>
+                <th class="py-3 px-4 text-right">Valor</th>
+                <th class="py-3 px-4 text-center">Status</th>
+                <th class="py-3 px-4 text-center no-print">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="fiadoTabelaBody" class="divide-y divide-slate-100 text-slate-700">
+              <!-- Injetado dinamicamente via JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Mensagem de lista vazia -->
+        <div id="fiadoVazioAlert" class="hidden text-center py-12 px-4 text-slate-400">
+          <div class="w-16 h-16 mx-auto mb-3 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-3xl font-bold">
+            <i class="fa-solid fa-book-open"></i>
+          </div>
+          <h4 class="font-bold text-slate-700 text-base mb-1">Nenhum fiado encontrado</h4>
+          <p class="text-xs text-slate-500 max-w-sm mx-auto mb-4">Você não tem contas fiado pendentes registradas no momento ou para o filtro selecionado.</p>
+          <button onclick="openModalNovoFiadoManual()" class="inline-flex items-center gap-2 px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs rounded-xl shadow-sm transition-colors cursor-pointer">
+            <i class="fa-solid fa-plus"></i> Anotar Novo Fiado
+          </button>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ==========================================================
          ABA 4: RELATÓRIOS & GRÁFICOS (CHART.JS)
     ========================================================== -->
     <section id="tab-relatorios" class="tab-content space-y-6">
@@ -779,20 +977,25 @@
   <!-- ==========================================
        BARRA DE NAVEGAÇÃO MOBILE (BOTTOM NAV)
   ========================================== -->
-  <div id="bottomNav" class="no-print md:hidden fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-800 z-30 px-3 py-2 flex items-center justify-around shadow-2xl">
-    <button onclick="switchTab('dashboard')" id="mobileNav-dashboard" class="mobile-nav-btn text-emerald-400 flex flex-col items-center gap-1 text-[11px] font-bold">
+  <div id="bottomNav" class="no-print md:hidden fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-800 z-30 px-2 py-2 flex items-center justify-around shadow-2xl">
+    <button onclick="switchTab('dashboard')" id="mobileNav-dashboard" class="mobile-nav-btn text-emerald-400 flex flex-col items-center gap-1 text-[10px] font-bold cursor-pointer">
       <i class="fa-solid fa-chart-pie text-lg"></i>
-      <span>Dashboard</span>
+      <span>Início</span>
     </button>
-    <button onclick="switchTab('pdv')" id="mobileNav-pdv" class="mobile-nav-btn text-slate-400 flex flex-col items-center gap-1 text-[11px] font-bold">
+    <button onclick="switchTab('pdv')" id="mobileNav-pdv" class="mobile-nav-btn text-slate-400 flex flex-col items-center gap-1 text-[10px] font-bold cursor-pointer">
       <i class="fa-solid fa-basket-shopping text-lg"></i>
       <span>PDV</span>
     </button>
-    <button onclick="switchTab('extrato')" id="mobileNav-extrato" class="mobile-nav-btn text-slate-400 flex flex-col items-center gap-1 text-[11px] font-bold">
+    <button onclick="switchTab('apagar')" id="mobileNav-apagar" class="mobile-nav-btn text-slate-400 flex flex-col items-center gap-1 text-[10px] font-bold relative cursor-pointer">
+      <i class="fa-solid fa-book-bookmark text-lg text-amber-400"></i>
+      <span>A Pagar</span>
+      <span id="badgeFiadoCountMobile" class="hidden absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+    </button>
+    <button onclick="switchTab('extrato')" id="mobileNav-extrato" class="mobile-nav-btn text-slate-400 flex flex-col items-center gap-1 text-[10px] font-bold cursor-pointer">
       <i class="fa-solid fa-receipt text-lg"></i>
       <span>Extrato</span>
     </button>
-    <button onclick="switchTab('relatorios')" id="mobileNav-relatorios" class="mobile-nav-btn text-slate-400 flex flex-col items-center gap-1 text-[11px] font-bold">
+    <button onclick="switchTab('relatorios')" id="mobileNav-relatorios" class="mobile-nav-btn text-slate-400 flex flex-col items-center gap-1 text-[10px] font-bold cursor-pointer">
       <i class="fa-solid fa-chart-line text-lg"></i>
       <span>Relatórios</span>
     </button>
@@ -862,20 +1065,21 @@
       
       <div class="flex items-center justify-between pb-3 border-b border-slate-100">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-lg font-bold">
-            <i class="fa-solid fa-plus"></i>
+          <div id="modalProdutoIconHeader" class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-lg font-bold">
+            <i class="fa-solid fa-box"></i>
           </div>
           <div>
-            <h3 class="font-extrabold text-slate-900 text-lg">Novo Produto no PDV</h3>
-            <p class="text-xs text-slate-500">Adicione ao seu catálogo de feira.</p>
+            <h3 id="modalProdutoTitulo" class="font-extrabold text-slate-900 text-lg">Novo Produto no PDV</h3>
+            <p id="modalProdutoSubtitulo" class="text-xs text-slate-500">Adicione ao seu catálogo de feira.</p>
           </div>
         </div>
-        <button onclick="closeModal('modalNovoProduto')" class="w-8 h-8 rounded-full bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center">
+        <button onclick="closeModal('modalNovoProduto')" class="w-8 h-8 rounded-full bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center cursor-pointer">
           <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
 
       <form id="formNovoProduto" onsubmit="salvarNovoProduto(event)" class="space-y-4 text-xs">
+        <input type="hidden" id="prodEditId" value="" />
         <div>
           <label class="block font-bold text-slate-700 mb-1">Nome do Produto *</label>
           <input type="text" id="prodNome" required placeholder="Ex.: Pastel de Carne Especial" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:border-emerald-500 text-sm font-semibold" />
@@ -917,24 +1121,31 @@
           <div class="flex items-center gap-2">
             <input type="text" id="prodIcone" maxlength="4" value="🥟" class="w-16 text-center text-xl px-2 py-2 border border-slate-300 rounded-xl focus:outline-none focus:border-emerald-500" />
             <div class="flex items-center gap-1.5 flex-wrap">
-              <button type="button" onclick="setProdEmoji('🥟')" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-base">🥟</button>
-              <button type="button" onclick="setProdEmoji('🥤')" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-base">🥤</button>
-              <button type="button" onclick="setProdEmoji('🍓')" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-base">🍓</button>
-              <button type="button" onclick="setProdEmoji('🧀')" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-base">🧀</button>
-              <button type="button" onclick="setProdEmoji('🍌')" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-base">🍌</button>
-              <button type="button" onclick="setProdEmoji('🌽')" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-base">🌽</button>
-              <button type="button" onclick="setProdEmoji('🍯')" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-base">🍯</button>
+              <button type="button" onclick="setProdEmoji('🥟')" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-base cursor-pointer">🥟</button>
+              <button type="button" onclick="setProdEmoji('🥤')" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-base cursor-pointer">🥤</button>
+              <button type="button" onclick="setProdEmoji('🍓')" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-base cursor-pointer">🍓</button>
+              <button type="button" onclick="setProdEmoji('🧀')" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-base cursor-pointer">🧀</button>
+              <button type="button" onclick="setProdEmoji('🍌')" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-base cursor-pointer">🍌</button>
+              <button type="button" onclick="setProdEmoji('🌽')" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-base cursor-pointer">🌽</button>
+              <button type="button" onclick="setProdEmoji('🍯')" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-base cursor-pointer">🍯</button>
             </div>
           </div>
         </div>
 
-        <div class="pt-3 flex items-center justify-end gap-2 border-t border-slate-100">
-          <button type="button" onclick="closeModal('modalNovoProduto')" class="px-4 py-2.5 text-slate-600 hover:bg-slate-100 rounded-xl font-semibold">
-            Cancelar
-          </button>
-          <button type="submit" class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-md transition-colors">
-            Cadastrar Produto
-          </button>
+        <div class="pt-3 flex items-center justify-between border-t border-slate-100">
+          <div>
+            <button type="button" id="btnExcluirProdutoModal" onclick="excluirProdutoDoModal()" class="hidden px-3.5 py-2 text-rose-600 hover:bg-rose-50 rounded-xl font-bold flex items-center gap-1.5 transition-colors cursor-pointer">
+              <i class="fa-solid fa-trash-can"></i> Excluir
+            </button>
+          </div>
+          <div class="flex items-center gap-2">
+            <button type="button" onclick="closeModal('modalNovoProduto')" class="px-4 py-2.5 text-slate-600 hover:bg-slate-100 rounded-xl font-semibold cursor-pointer">
+              Cancelar
+            </button>
+            <button type="submit" id="btnSubmitProduto" class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-md transition-colors cursor-pointer">
+              Cadastrar Produto
+            </button>
+          </div>
         </div>
       </form>
 
@@ -1121,6 +1332,125 @@
         </button>
       </div>
 
+  <!-- 6. MODAL: NOVO FIADO MANUAL (CADERNETA) -->
+  <div id="modalNovoFiadoManual" class="modal-backdrop fixed inset-0 bg-slate-950/70 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+    <div class="modal-box bg-white w-full max-w-md rounded-3xl p-6 sm:p-7 shadow-2xl border border-slate-200 space-y-5">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center text-lg font-bold">
+            <i class="fa-solid fa-book-bookmark"></i>
+          </div>
+          <div>
+            <h3 class="font-extrabold text-slate-900 text-lg">Anotar Novo Fiado</h3>
+            <p class="text-xs text-slate-500">Registre uma venda a prazo na caderneta da feira.</p>
+          </div>
+        </div>
+        <button onclick="closeModal('modalNovoFiadoManual')" class="w-8 h-8 rounded-full bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center cursor-pointer">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form id="formNovoFiadoManual" onsubmit="salvarFiadoManual(event)" class="space-y-4 text-xs">
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Nome do Cliente / Apelido *</label>
+          <input type="text" id="manualFiadoNome" required placeholder="Ex.: Dona Maria do Pastel, Seu Zé da Banca 3" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:border-amber-500 text-sm font-semibold" />
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Valor da Conta (R$) *</label>
+            <input type="number" step="0.10" min="0.10" id="manualFiadoValor" required placeholder="35,00" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:border-amber-500 text-sm font-semibold" />
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Telefone / WhatsApp</label>
+            <input type="tel" id="manualFiadoTelefone" placeholder="(11) 99999-9999" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:border-amber-500 text-sm font-semibold" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Itens / Descrição do que levou *</label>
+          <textarea id="manualFiadoDescricao" required rows="2" placeholder="Ex.: 2x Pastel de Carne + 1x Caldo de Cana" class="w-full px-3.5 py-2 border border-slate-300 rounded-xl focus:outline-none focus:border-amber-500 font-semibold"></textarea>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Data Prometida para Acerto (Opcional)</label>
+          <input type="date" id="manualFiadoDataPrometida" class="w-full px-3.5 py-2 border border-slate-300 rounded-xl focus:outline-none focus:border-amber-500 font-semibold bg-white" />
+        </div>
+
+        <div class="pt-3 flex items-center justify-end gap-2 border-t border-slate-100">
+          <button type="button" onclick="closeModal('modalNovoFiadoManual')" class="px-4 py-2.5 text-slate-600 hover:bg-slate-100 rounded-xl font-semibold cursor-pointer">
+            Cancelar
+          </button>
+          <button type="submit" class="px-6 py-2.5 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-xl shadow-md transition-colors cursor-pointer">
+            Anotar na Caderneta
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 7. MODAL: RECEBER / QUITAR FIADO -->
+  <div id="modalQuitarFiado" class="modal-backdrop fixed inset-0 bg-slate-950/70 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+    <div class="modal-box bg-white w-full max-w-md rounded-3xl p-6 sm:p-7 shadow-2xl border border-slate-200 space-y-5">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-lg font-bold">
+            <i class="fa-solid fa-hand-holding-dollar"></i>
+          </div>
+          <div>
+            <h3 class="font-extrabold text-slate-900 text-lg">Receber / Quitar Fiado</h3>
+            <p class="text-xs text-slate-500">Dê baixa na conta e lance o dinheiro no Caixa.</p>
+          </div>
+        </div>
+        <button onclick="closeModal('modalQuitarFiado')" class="w-8 h-8 rounded-full bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center cursor-pointer">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <input type="hidden" id="quitarFiadoId" value="" />
+
+      <!-- Resumo do Fiado -->
+      <div class="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-xs space-y-1.5">
+        <div class="flex justify-between font-bold text-slate-800">
+          <span>Cliente:</span>
+          <span id="quitarFiadoCliente" class="text-amber-900">-</span>
+        </div>
+        <div class="flex justify-between text-slate-600">
+          <span>Itens:</span>
+          <span id="quitarFiadoDescricao" class="text-slate-700 text-right truncate max-w-[200px]">-</span>
+        </div>
+        <div class="flex justify-between font-extrabold text-sm pt-1 border-t border-amber-200 text-slate-900">
+          <span>Valor a Pagar:</span>
+          <span id="quitarFiadoValorTotal" class="text-amber-700">R$ 0,00</span>
+        </div>
+      </div>
+
+      <form id="formQuitarFiado" onsubmit="confirmarQuitacaoFiado(event)" class="space-y-4 text-xs">
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Como o cliente pagou? *</label>
+          <select id="quitarFiadoMetodo" required class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl font-bold bg-white focus:outline-none focus:border-emerald-500 text-sm">
+            <option value="dinheiro">Dinheiro (Em espécie)</option>
+            <option value="pix">Pix</option>
+            <option value="debito">Cartão de Débito</option>
+            <option value="credito">Cartão de Crédito</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Valor Recebido (R$) *</label>
+          <input type="number" step="0.10" min="0.10" id="quitarFiadoValorRecebido" required class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:border-emerald-500 text-sm font-semibold" />
+          <span class="text-[11px] text-slate-400 mt-1 block">Esse valor entrará imediatamente no Caixa de hoje como recebimento.</span>
+        </div>
+
+        <div class="pt-3 flex items-center justify-end gap-2 border-t border-slate-100">
+          <button type="button" onclick="closeModal('modalQuitarFiado')" class="px-4 py-2.5 text-slate-600 hover:bg-slate-100 rounded-xl font-semibold cursor-pointer">
+            Cancelar
+          </button>
+          <button type="submit" class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-md transition-colors cursor-pointer flex items-center gap-1.5">
+            <i class="fa-solid fa-check"></i> Confirmar Baixa no Fiado
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 
@@ -1137,86 +1467,95 @@
     </div>
   </div>
 
+  <!-- CONTAINER DE NOTIFICAÇÕES TOAST (NÃO-BLOQUEANTE) -->
+  <div id="toastContainer" class="fixed top-4 right-4 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4"></div>
+
   <!-- ==========================================
        JAVASCRIPT ES6+ COMPLETO
   ========================================== -->
   <script>
     /* =====================================================================
+       0. SISTEMA DE NOTIFICAÇÕES TOAST (SUBSTITUI ALERT NATIVO BLOQUEANTE)
+    ===================================================================== */
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      if (!container) return;
+
+      const toast = document.createElement('div');
+      toast.className = 'pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-2xl shadow-xl text-white text-xs sm:text-sm font-semibold transition-all duration-300 transform translate-y-2 opacity-0';
+      
+      let bg = 'bg-slate-900 border border-slate-700';
+      let icon = 'fa-info-circle text-blue-400';
+
+      if (type === 'success') {
+        bg = 'bg-emerald-900/95 border border-emerald-600 shadow-emerald-900/30';
+        icon = 'fa-circle-check text-emerald-400';
+      } else if (type === 'error' || type === 'danger') {
+        bg = 'bg-rose-900/95 border border-rose-600 shadow-rose-900/30';
+        icon = 'fa-circle-exclamation text-rose-400';
+      } else if (type === 'warning') {
+        bg = 'bg-amber-900/95 border border-amber-600 shadow-amber-900/30';
+        icon = 'fa-triangle-exclamation text-amber-400';
+      }
+
+      toast.className += ' ' + bg;
+      toast.innerHTML = `
+        <i class="fa-solid ${icon} text-base flex-shrink-0"></i>
+        <div class="flex-1 leading-snug">${message}</div>
+        <button type="button" class="text-white/60 hover:text-white p-1 ml-1 cursor-pointer">
+          <i class="fa-solid fa-xmark text-xs"></i>
+        </button>
+      `;
+
+      const closeBtn = toast.querySelector('button');
+      if (closeBtn) {
+        closeBtn.onclick = () => {
+          toast.classList.add('opacity-0', 'translate-y-2');
+          setTimeout(() => toast.remove(), 300);
+        };
+      }
+
+      container.appendChild(toast);
+      requestAnimationFrame(() => {
+        toast.classList.remove('opacity-0', 'translate-y-2');
+      });
+
+      setTimeout(() => {
+        if (toast.parentNode) {
+          toast.classList.add('opacity-0', 'translate-y-2');
+          setTimeout(() => toast.remove(), 300);
+        }
+      }, 4000);
+    }
+
+    // Redireciona chamadas window.alert para o toast moderno não-bloqueante
+    window.alert = (msg) => showToast(msg, 'warning');
+
+    /* =====================================================================
        1. ESTADO GLOBAL DA APLICAÇÃO & PERSISTÊNCIA EM LOCALSTORAGE
     ===================================================================== */
     const STORAGE_KEYS = {
-      TRANSACTIONS: 'feiracash_v2_transactions',
-      PRODUCTS: 'feiracash_v2_products',
-      CART: 'feiracash_v2_cart',
-      SETTINGS: 'feiracash_v2_settings'
+      TRANSACTIONS: 'feiracash_v3_transactions',
+      PRODUCTS: 'feiracash_v3_products',
+      CART: 'feiracash_v3_cart',
+      FIADO: 'feiracash_v3_fiado',
+      SETTINGS: 'feiracash_v3_settings'
     };
 
-    // Catálogo Inicial Padrão de Feira (se LocalStorage estiver vazio)
-    const SEED_PRODUCTS = [
-      { id: 'p1', nome: 'Pastel de Carne', categoria: 'Pastéis & Salgados', preco: 12.00, unidade: 'un', icone: '🥟' },
-      { id: 'p2', nome: 'Pastel de Queijo Especial', categoria: 'Pastéis & Salgados', preco: 12.00, unidade: 'un', icone: '🧀' },
-      { id: 'p3', nome: 'Pastel de Palmito com Catupiry', categoria: 'Pastéis & Salgados', preco: 14.00, unidade: 'un', icone: '🥟' },
-      { id: 'p4', nome: 'Caldo de Cana 500ml', categoria: 'Bebidas & Caldos', preco: 8.00, unidade: 'copo', icone: '🥤' },
-      { id: 'p5', nome: 'Suco Natural de Laranja 500ml', categoria: 'Bebidas & Caldos', preco: 10.00, unidade: 'copo', icone: '🍊' },
-      { id: 'p6', nome: 'Morango Doce Selecionado', categoria: 'Hortifruti & Orgânicos', preco: 15.00, unidade: 'bandeja', icone: '🍓' },
-      { id: 'p7', nome: 'Banana Prata Orgânica', categoria: 'Hortifruti & Orgânicos', preco: 7.50, unidade: 'kg', icone: '🍌' },
-      { id: 'p8', nome: 'Queijo Meia Cura Artesanal', categoria: 'Doces & Queijos', preco: 35.00, unidade: 'un', icone: '🧀' },
-      { id: 'p9', nome: 'Doce de Leite Cremoso 500g', categoria: 'Doces & Queijos', preco: 18.00, unidade: 'un', icone: '🍯' }
-    ];
+    // Limpeza proativa de dados de demonstração legados (v2)
+    try {
+      localStorage.removeItem('feiracash_v2_products');
+      localStorage.removeItem('feiracash_v2_transactions');
+      localStorage.removeItem('feiracash_v2_cart');
+      localStorage.removeItem('feiracash_v2_settings');
+    } catch (e) {
+      console.warn('Erro ao limpar cache legado:', e);
+    }
 
-    // Transações Iniciais para Demonstração Rica
-    const SEED_TRANSACTIONS = [
-      {
-        id: 'FC-101',
-        type: 'recebimento',
-        description: 'Venda PDV: 2x Pastel de Carne, 1x Caldo de Cana',
-        amount: 32.00,
-        category: 'Pastéis & Salgados',
-        paymentMethod: 'pix',
-        date: new Date(Date.now() - 3600000 * 2).toISOString(),
-        items: [
-          { name: 'Pastel de Carne', quantity: 2, unitPrice: 12.00 },
-          { name: 'Caldo de Cana 500ml', quantity: 1, unitPrice: 8.00 }
-        ]
-      },
-      {
-        id: 'FC-102',
-        type: 'recebimento',
-        description: 'Venda PDV: 1x Queijo Meia Cura Artesanal',
-        amount: 35.00,
-        category: 'Doces & Queijos',
-        paymentMethod: 'dinheiro',
-        date: new Date(Date.now() - 3600000 * 1.5).toISOString(),
-        items: [
-          { name: 'Queijo Meia Cura Artesanal', quantity: 1, unitPrice: 35.00 }
-        ]
-      },
-      {
-        id: 'FC-103',
-        type: 'pagamento',
-        description: 'Compra de 2 sacos de gelo e copos plásticos',
-        amount: 25.00,
-        category: 'Insumos & Ingredientes',
-        paymentMethod: 'dinheiro',
-        date: new Date(Date.now() - 3600000 * 3).toISOString()
-      },
-      {
-        id: 'FC-104',
-        type: 'recebimento',
-        description: 'Venda PDV: 2x Morango Doce Selecionado',
-        amount: 30.00,
-        category: 'Hortifruti & Orgânicos',
-        paymentMethod: 'debito',
-        date: new Date(Date.now() - 3600000 * 0.8).toISOString(),
-        items: [
-          { name: 'Morango Doce Selecionado', quantity: 2, unitPrice: 15.00 }
-        ]
-      }
-    ];
-
-    // Carregamento de dados com fallback para os seeds
-    let produtos = JSON.parse(localStorage.getItem(STORAGE_KEYS.PRODUCTS)) || SEED_PRODUCTS;
-    let transacoes = JSON.parse(localStorage.getItem(STORAGE_KEYS.TRANSACTIONS)) || SEED_TRANSACTIONS;
+    // O catálogo, movimentações e caderneta fiado iniciam limpos
+    let produtos = JSON.parse(localStorage.getItem(STORAGE_KEYS.PRODUCTS)) || [];
+    let transacoes = JSON.parse(localStorage.getItem(STORAGE_KEYS.TRANSACTIONS)) || [];
+    let fiados = JSON.parse(localStorage.getItem(STORAGE_KEYS.FIADO)) || [];
     let carrinho = []; // Carrinho atual do PDV
     let pdvPagamentoSelecionado = 'dinheiro';
     let pdvCategoriaAtiva = 'todas';
@@ -1230,6 +1569,7 @@
     function saveState() {
       localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(produtos));
       localStorage.setItem(STORAGE_KEYS.TRANSACTIONS, JSON.stringify(transacoes));
+      localStorage.setItem(STORAGE_KEYS.FIADO, JSON.stringify(fiados));
     }
 
     // Formatador oficial BRL
@@ -1276,11 +1616,16 @@
         renderDashboard();
       } else if (tabId === 'pdv') {
         renderPDV();
+      } else if (tabId === 'apagar') {
+        renderAPagar();
       } else if (tabId === 'extrato') {
         renderExtrato();
       } else if (tabId === 'relatorios') {
         renderRelatorios();
       }
+
+      // Atualiza badges globais
+      atualizarBadgesFiado();
 
       // Rola para o topo suavemente
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1384,6 +1729,9 @@
           `;
         }).join('');
       }
+
+      // Atualiza alertas e contadores de fiado
+      atualizarBadgesFiado();
     }
 
     /* =====================================================================
@@ -1473,11 +1821,22 @@
     }
 
     function renderCategoriasPDV() {
-      const cats = ['todas', ...new Set(produtos.map(p => p.categoria))];
       const container = document.getElementById('pdvCategoryFilterContainer');
+      if (!container) return;
+
+      if (produtos.length === 0) {
+        container.innerHTML = `
+          <button type="button" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-600 text-white shadow-xs">
+            Todas (0)
+          </button>
+        `;
+        return;
+      }
+
+      const cats = ['todas', ...new Set(produtos.map(p => p.categoria))];
 
       container.innerHTML = cats.map(c => `
-        <button type="button" onclick="filtrarCategoriaPDV('${c}')" class="px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${pdvCategoriaAtiva === c ? 'bg-emerald-600 text-white shadow-xs' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'}">
+        <button type="button" onclick="filtrarCategoriaPDV('${c}')" class="px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${pdvCategoriaAtiva === c ? 'bg-emerald-600 text-white shadow-xs' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'}">
           ${c === 'todas' ? 'Todas' : c}
         </button>
       `).join('');
@@ -1496,6 +1855,26 @@
     function renderCatalogoPDV() {
       const query = (document.getElementById('pdvSearchInput')?.value || '').toLowerCase().trim();
       const grid = document.getElementById('pdvProductGrid');
+      if (!grid) return;
+
+      if (produtos.length === 0) {
+        document.getElementById('pdvContadorProdutos').textContent = 'Catálogo (0 produtos)';
+        grid.innerHTML = `
+          <div class="col-span-full py-12 px-6 text-center bg-white rounded-3xl border-2 border-dashed border-emerald-200 shadow-xs">
+            <div class="w-16 h-16 mx-auto mb-3 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-3xl font-bold">
+              <i class="fa-solid fa-store"></i>
+            </div>
+            <h4 class="font-extrabold text-slate-800 text-base sm:text-lg mb-1">Catálogo Vazio & Pronto para Você!</h4>
+            <p class="text-xs sm:text-sm text-slate-500 max-w-md mx-auto mb-5 leading-relaxed">
+              Você ainda não tem nenhum produto cadastrado. Comece agora cadastrando seus itens de feira com nome, preço, unidade e ícone.
+            </p>
+            <button id="btnCadastrarPrimeiroProduto" onclick="openModalNovoProduto()" type="button" class="inline-flex items-center gap-2 px-5 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm rounded-xl shadow-md transition-all active:scale-95 cursor-pointer">
+              <i class="fa-solid fa-plus"></i> Cadastrar Meu Primeiro Produto
+            </button>
+          </div>
+        `;
+        return;
+      }
 
       const filtrados = produtos.filter(p => {
         const matchCat = pdvCategoriaAtiva === 'todas' || p.categoria === pdvCategoriaAtiva;
@@ -1516,18 +1895,23 @@
       }
 
       grid.innerHTML = filtrados.map(p => `
-        <div onclick="adicionarAoCarrinho('${p.id}')" class="bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-200 hover:border-emerald-500 shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col justify-between group active:scale-[0.98]">
+        <div onclick="adicionarAoCarrinho('${p.id}')" class="bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-200 hover:border-emerald-500 shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col justify-between group active:scale-[0.99] relative">
           <div>
             <div class="flex items-center justify-between mb-2">
               <span class="text-2xl">${p.icone || '📦'}</span>
-              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-100 px-2 py-0.5 rounded-full">${p.unidade}</span>
+              <div class="flex items-center gap-1.5">
+                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider bg-slate-100 px-2 py-0.5 rounded-full">${p.unidade}</span>
+                <button type="button" onclick="openModalEditarProduto('${p.id}', event)" title="Editar este produto" class="w-6 h-6 rounded-md bg-slate-100 hover:bg-emerald-100 text-slate-400 hover:text-emerald-700 flex items-center justify-center text-[11px] transition-colors cursor-pointer">
+                  <i class="fa-solid fa-pen"></i>
+                </button>
+              </div>
             </div>
             <h4 class="font-bold text-slate-800 text-xs sm:text-sm line-clamp-2 leading-snug group-hover:text-emerald-700 transition-colors">${p.nome}</h4>
           </div>
 
           <div class="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between">
             <strong class="text-emerald-600 font-extrabold text-sm sm:text-base">${formatBRL(p.preco)}</strong>
-            <button class="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-700 group-hover:bg-emerald-600 group-hover:text-white flex items-center justify-center text-xs transition-colors">
+            <button type="button" class="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-700 group-hover:bg-emerald-600 group-hover:text-white flex items-center justify-center text-xs transition-colors">
               <i class="fa-solid fa-plus"></i>
             </button>
           </div>
@@ -1576,6 +1960,9 @@
       carrinho = [];
       document.getElementById('pdvCartDesconto').value = '0.00';
       document.getElementById('pdvValorRecebido').value = '';
+      if (document.getElementById('pdvFiadoClienteNome')) document.getElementById('pdvFiadoClienteNome').value = '';
+      if (document.getElementById('pdvFiadoClienteTelefone')) document.getElementById('pdvFiadoClienteTelefone').value = '';
+      if (document.getElementById('pdvFiadoDataPrometida')) document.getElementById('pdvFiadoDataPrometida').value = '';
       renderCarrinho();
     }
 
@@ -1641,22 +2028,33 @@
     function setPdvPaymentMethod(method) {
       pdvPagamentoSelecionado = method;
       document.querySelectorAll('.pdv-pay-btn').forEach(btn => {
-        btn.classList.remove('active', 'border-emerald-500', 'bg-emerald-50', 'text-emerald-800');
+        btn.classList.remove('active', 'border-emerald-500', 'bg-emerald-50', 'text-emerald-800', 'border-amber-500', 'bg-amber-50', 'text-amber-900');
         btn.classList.add('border-slate-200', 'bg-slate-50', 'text-slate-700');
       });
 
       const activeBtn = document.getElementById(`pdvPayBtn-${method}`);
       if (activeBtn) {
-        activeBtn.classList.add('active', 'border-emerald-500', 'bg-emerald-50', 'text-emerald-800');
+        if (method === 'fiado') {
+          activeBtn.classList.add('active', 'border-amber-500', 'bg-amber-50', 'text-amber-900');
+        } else {
+          activeBtn.classList.add('active', 'border-emerald-500', 'bg-emerald-50', 'text-emerald-800');
+        }
         activeBtn.classList.remove('border-slate-200', 'bg-slate-50', 'text-slate-700');
       }
 
       const painelTroco = document.getElementById('pdvPainelTroco');
+      const painelFiado = document.getElementById('pdvPainelFiado');
+
       if (method === 'dinheiro') {
-        painelTroco.classList.remove('hidden');
+        if (painelTroco) painelTroco.classList.remove('hidden');
+        if (painelFiado) painelFiado.classList.add('hidden');
         calcularTrocoPDV();
+      } else if (method === 'fiado') {
+        if (painelTroco) painelTroco.classList.add('hidden');
+        if (painelFiado) painelFiado.classList.remove('hidden');
       } else {
-        painelTroco.classList.add('hidden');
+        if (painelTroco) painelTroco.classList.add('hidden');
+        if (painelFiado) painelFiado.classList.add('hidden');
       }
     }
 
@@ -1710,7 +2108,69 @@
       const subtotal = getSubtotalCarrinho();
       const desconto = parseFloat(document.getElementById('pdvCartDesconto').value) || 0;
       const recebido = parseFloat(document.getElementById('pdvValorRecebido').value) || total;
+      const dataHora = new Date();
 
+      // Monta a descrição resumida dos itens
+      const descItens = carrinho.map(i => `${i.quantity}x ${i.nome}`).join(', ');
+      const descCompleta = `Venda PDV: ${descItens}`;
+
+      // CASO ESPECIAL: VENDA NO FIADO (SALVA NA ABA A PAGAR / CADERNETA)
+      if (pdvPagamentoSelecionado === 'fiado') {
+        const clienteNome = document.getElementById('pdvFiadoClienteNome')?.value.trim();
+        if (!clienteNome) {
+          alert('Por favor, informe o Nome do Cliente para anotar o Fiado na caderneta.');
+          document.getElementById('pdvFiadoClienteNome')?.focus();
+          return;
+        }
+
+        const clienteTelefone = document.getElementById('pdvFiadoClienteTelefone')?.value.trim() || '';
+        const dataPrometida = document.getElementById('pdvFiadoDataPrometida')?.value || '';
+        const fiadoId = 'FD-' + Math.floor(1000 + Math.random() * 9000);
+
+        const novoFiado = {
+          id: fiadoId,
+          clienteNome,
+          clienteTelefone,
+          dataPrometida,
+          valor: total,
+          status: 'pendente',
+          date: dataHora.toISOString(),
+          descricao: descCompleta,
+          items: carrinho.map(c => ({
+            name: c.nome,
+            quantity: c.quantity,
+            unitPrice: c.preco
+          }))
+        };
+
+        fiados.push(novoFiado);
+        saveState();
+
+        // Limpa campos do fiado
+        if (document.getElementById('pdvFiadoClienteNome')) document.getElementById('pdvFiadoClienteNome').value = '';
+        if (document.getElementById('pdvFiadoClienteTelefone')) document.getElementById('pdvFiadoClienteTelefone').value = '';
+        if (document.getElementById('pdvFiadoDataPrometida')) document.getElementById('pdvFiadoDataPrometida').value = '';
+
+        // Exibe comprovante especial de Fiado
+        exibirComprovanteVenda({
+          id: fiadoId,
+          dataHora: dataHora.toLocaleString('pt-BR'),
+          itens: [...carrinho],
+          subtotal,
+          desconto,
+          total,
+          formaPagamento: 'FIADO (A PAGAR)',
+          clienteNome: clienteNome,
+          troco: 0
+        });
+
+        limparCarrinho();
+        renderDashboard();
+        atualizarBadgesFiado();
+        return;
+      }
+
+      // CASO PADRÃO: PAGAMENTO À VISTA (DINHEIRO, PIX, DÉBITO, CRÉDITO)
       if (pdvPagamentoSelecionado === 'dinheiro' && recebido < total) {
         alert('O valor recebido é menor que o total a pagar!');
         return;
@@ -1718,11 +2178,6 @@
 
       const troco = pdvPagamentoSelecionado === 'dinheiro' ? Math.max(0, recebido - total) : 0;
       const txId = 'FC-' + Math.floor(1000 + Math.random() * 9000);
-      const dataHora = new Date();
-
-      // Monta a descrição resumida
-      const descItens = carrinho.map(i => `${i.quantity}x ${i.nome}`).join(', ');
-      const descCompleta = `Venda PDV: ${descItens}`;
 
       // Cria a nova transação
       const novaTransacao = {
@@ -1900,6 +2355,328 @@
         renderExtrato();
         renderDashboard();
       }
+    }
+
+    /* =====================================================================
+       7. MÓDULO A PAGAR (CADERNETA DE FIADOS)
+    ===================================================================== */
+    function atualizarBadgesFiado() {
+      const pendentes = fiados.filter(f => f.status === 'pendente');
+      const count = pendentes.length;
+      const totalPendente = pendentes.reduce((sum, f) => sum + (Number(f.valor) || 0), 0);
+
+      // Desktop badge
+      const badgeDesk = document.getElementById('badgeFiadoCount');
+      if (badgeDesk) {
+        if (count > 0) {
+          badgeDesk.textContent = count;
+          badgeDesk.classList.remove('hidden');
+        } else {
+          badgeDesk.classList.add('hidden');
+        }
+      }
+
+      // Mobile badge
+      const badgeMobile = document.getElementById('badgeFiadoCountMobile');
+      if (badgeMobile) {
+        if (count > 0) {
+          badgeMobile.classList.remove('hidden');
+        } else {
+          badgeMobile.classList.add('hidden');
+        }
+      }
+
+      // Dashboard alert banner
+      const alertCard = document.getElementById('dashboardFiadoAlert');
+      const alertTexto = document.getElementById('dashboardFiadoResumoTexto');
+      if (alertCard && alertTexto) {
+        if (count > 0) {
+          const clientesUnicos = new Set(pendentes.map(p => p.clienteNome.toLowerCase().trim())).size;
+          alertTexto.textContent = `Você tem ${formatBRL(totalPendente)} a receber de ${clientesUnicos} ${clientesUnicos === 1 ? 'cliente' : 'clientes'} na caderneta.`;
+          alertCard.classList.remove('hidden');
+        } else {
+          alertCard.classList.add('hidden');
+        }
+      }
+    }
+
+    function renderAPagar() {
+      const statusFiltro = document.getElementById('fiadoFiltroStatus')?.value || 'pendente';
+      const busca = (document.getElementById('fiadoBuscaInput')?.value || '').toLowerCase().trim();
+
+      // Cálculos de KPI
+      let totalPendente = 0;
+      let totalPago = 0;
+      let countPendentes = 0;
+      let countPagos = 0;
+      const clientesDevedores = new Set();
+
+      fiados.forEach(f => {
+        const val = Number(f.valor) || 0;
+        if (f.status === 'pendente') {
+          totalPendente += val;
+          countPendentes += 1;
+          clientesDevedores.add(f.clienteNome.toLowerCase().trim());
+        } else {
+          totalPago += val;
+          countPagos += 1;
+        }
+      });
+
+      // Atualiza KPIs
+      if (document.getElementById('fiadoKpiTotalPendente')) {
+        document.getElementById('fiadoKpiTotalPendente').textContent = formatBRL(totalPendente);
+      }
+      if (document.getElementById('fiadoKpiQtdPendentes')) {
+        document.getElementById('fiadoKpiQtdPendentes').textContent = `${countPendentes} ${countPendentes === 1 ? 'conta em aberto' : 'contas em aberto'}`;
+      }
+      if (document.getElementById('fiadoKpiClientes')) {
+        document.getElementById('fiadoKpiClientes').textContent = clientesDevedores.size;
+      }
+      if (document.getElementById('fiadoKpiTotalPago')) {
+        document.getElementById('fiadoKpiTotalPago').textContent = formatBRL(totalPago);
+      }
+      if (document.getElementById('fiadoKpiQtdPagos')) {
+        document.getElementById('fiadoKpiQtdPagos').textContent = `${countPagos} ${countPagos === 1 ? 'conta acertada' : 'contas acertadas'}`;
+      }
+      if (document.getElementById('fiadoKpiTotalGeral')) {
+        document.getElementById('fiadoKpiTotalGeral').textContent = fiados.length;
+      }
+
+      // Filtragem
+      const filtrados = fiados.filter(f => {
+        if (statusFiltro !== 'todos' && f.status !== statusFiltro) return false;
+        if (busca) {
+          const matchNome = (f.clienteNome || '').toLowerCase().includes(busca);
+          const matchDesc = (f.descricao || '').toLowerCase().includes(busca);
+          const matchTel = (f.clienteTelefone || '').toLowerCase().includes(busca);
+          if (!matchNome && !matchDesc && !matchTel) return false;
+        }
+        return true;
+      }).reverse(); // Mais recentes primeiro
+
+      const tbody = document.getElementById('fiadoTabelaBody');
+      const alertVazio = document.getElementById('fiadoVazioAlert');
+      if (!tbody) return;
+
+      const somaFiltrados = filtrados.reduce((acc, cur) => acc + (Number(cur.valor) || 0), 0);
+      if (document.getElementById('fiadoResumoContagem')) {
+        document.getElementById('fiadoResumoContagem').textContent = `Mostrando ${filtrados.length} registros de fiado`;
+      }
+      if (document.getElementById('fiadoResumoSoma')) {
+        document.getElementById('fiadoResumoSoma').textContent = `Total da lista: ${formatBRL(somaFiltrados)}`;
+      }
+
+      if (filtrados.length === 0) {
+        tbody.innerHTML = '';
+        if (alertVazio) alertVazio.classList.remove('hidden');
+        atualizarBadgesFiado();
+        return;
+      }
+      if (alertVazio) alertVazio.classList.add('hidden');
+
+      const hoje = new Date().toISOString().split('T')[0];
+
+      tbody.innerHTML = filtrados.map(f => {
+        const d = new Date(f.date);
+        const dataFormatada = d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        const isPendente = f.status === 'pendente';
+
+        let prazoTag = '<span class="text-slate-400 italic">Não definida</span>';
+        if (f.dataPrometida) {
+          const isAtrasado = isPendente && f.dataPrometida < hoje;
+          const isHoje = isPendente && f.dataPrometida === hoje;
+          const [ano, mes, dia] = f.dataPrometida.split('-');
+          const dataBR = `${dia}/${mes}/${ano}`;
+
+          if (isAtrasado) {
+            prazoTag = `<span class="inline-flex items-center gap-1 font-bold text-[11px] text-rose-700 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-md"><i class="fa-solid fa-triangle-exclamation"></i> Venceu em ${dataBR}</span>`;
+          } else if (isHoje) {
+            prazoTag = `<span class="inline-flex items-center gap-1 font-bold text-[11px] text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md"><i class="fa-solid fa-clock"></i> Vence HOJE (${dataBR})</span>`;
+          } else {
+            prazoTag = `<span class="font-semibold text-[11px] text-slate-700">${dataBR}</span>`;
+          }
+        }
+
+        return `
+          <tr class="hover:bg-slate-50 transition-colors">
+            <td class="py-3 px-4">
+              <strong class="text-slate-900 block text-xs">${f.clienteNome}</strong>
+              ${f.clienteTelefone ? `<span class="text-[11px] text-slate-500 flex items-center gap-1"><i class="fa-brands fa-whatsapp text-emerald-600"></i> ${f.clienteTelefone}</span>` : '<span class="text-[10px] text-slate-400">Sem telefone</span>'}
+            </td>
+            <td class="py-3 px-4 font-mono text-slate-500 whitespace-nowrap">${dataFormatada}</td>
+            <td class="py-3 px-4">
+              <span class="font-medium text-slate-800 block line-clamp-1">${f.descricao || '-'}</span>
+              ${f.items && f.items.length > 0 ? `<span class="text-[11px] text-slate-400 block">${f.items.map(it => `${it.quantity}x ${it.name}`).join(' • ')}</span>` : ''}
+            </td>
+            <td class="py-3 px-4 whitespace-nowrap">${prazoTag}</td>
+            <td class="py-3 px-4 text-right font-extrabold whitespace-nowrap text-sm ${isPendente ? 'text-amber-700' : 'text-emerald-600'}">
+              ${formatBRL(f.valor)}
+            </td>
+            <td class="py-3 px-4 text-center whitespace-nowrap">
+              ${isPendente ? `
+                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full font-bold text-[10px] uppercase bg-amber-100 text-amber-800 border border-amber-200">
+                  <i class="fa-solid fa-clock"></i> Pendente
+                </span>
+              ` : `
+                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full font-bold text-[10px] uppercase bg-emerald-100 text-emerald-800 border border-emerald-200" title="Quitado via ${f.formaPagamentoQuitacao || 'PAGAMENTO'}">
+                  <i class="fa-solid fa-check"></i> Quitado
+                </span>
+              `}
+            </td>
+            <td class="py-3 px-4 text-center whitespace-nowrap no-print">
+              <div class="flex items-center justify-center gap-1">
+                ${isPendente ? `
+                  <button onclick="openModalQuitarFiado('${f.id}')" title="Dar Baixa / Receber Fiado" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] flex items-center gap-1 transition-all cursor-pointer shadow-xs">
+                    <i class="fa-solid fa-hand-holding-dollar"></i> Receber
+                  </button>
+                  <button onclick="cobrarWhatsAppFiado('${f.id}')" title="Enviar Cobrança no WhatsApp" class="p-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 transition-colors cursor-pointer">
+                    <i class="fa-brands fa-whatsapp text-sm"></i>
+                  </button>
+                ` : ''}
+                <button onclick="excluirFiado('${f.id}')" title="Excluir da Caderneta" class="p-1.5 rounded-lg hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition-colors cursor-pointer">
+                  <i class="fa-solid fa-trash-can text-xs"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      atualizarBadgesFiado();
+    }
+
+    function openModalNovoFiadoManual() {
+      document.getElementById('formNovoFiadoManual')?.reset();
+      openModal('modalNovoFiadoManual');
+    }
+
+    function salvarFiadoManual(e) {
+      e.preventDefault();
+      const nome = document.getElementById('manualFiadoNome')?.value.trim();
+      const valor = parseFloat(document.getElementById('manualFiadoValor')?.value) || 0;
+      const telefone = document.getElementById('manualFiadoTelefone')?.value.trim() || '';
+      const descricao = document.getElementById('manualFiadoDescricao')?.value.trim() || 'Venda Fiado Manual';
+      const dataPrometida = document.getElementById('manualFiadoDataPrometida')?.value || '';
+
+      if (!nome || valor <= 0) {
+        alert('Por favor, informe o nome do cliente e um valor válido.');
+        return;
+      }
+
+      const fiadoId = 'FD-' + Math.floor(1000 + Math.random() * 9000);
+      const novo = {
+        id: fiadoId,
+        clienteNome: nome,
+        clienteTelefone: telefone,
+        dataPrometida,
+        valor,
+        status: 'pendente',
+        date: new Date().toISOString(),
+        descricao
+      };
+
+      fiados.push(novo);
+      saveState();
+      closeModal('modalNovoFiadoManual');
+      renderAPagar();
+      renderDashboard();
+      atualizarBadgesFiado();
+      alert(`Fiado de ${nome} anotado com sucesso na caderneta!`);
+    }
+
+    function openModalQuitarFiado(id) {
+      const f = fiados.find(item => item.id === id);
+      if (!f) return;
+
+      document.getElementById('quitarFiadoId').value = f.id;
+      document.getElementById('quitarFiadoCliente').textContent = f.clienteNome;
+      document.getElementById('quitarFiadoDescricao').textContent = f.descricao || '-';
+      document.getElementById('quitarFiadoValorTotal').textContent = formatBRL(f.valor);
+      document.getElementById('quitarFiadoValorRecebido').value = Number(f.valor).toFixed(2);
+      document.getElementById('quitarFiadoMetodo').value = 'dinheiro';
+
+      openModal('modalQuitarFiado');
+    }
+
+    function confirmarQuitacaoFiado(e) {
+      e.preventDefault();
+      const id = document.getElementById('quitarFiadoId')?.value;
+      const f = fiados.find(item => item.id === id);
+      if (!f) return;
+
+      const valorRecebido = parseFloat(document.getElementById('quitarFiadoValorRecebido')?.value) || 0;
+      const metodo = document.getElementById('quitarFiadoMetodo')?.value || 'dinheiro';
+
+      if (valorRecebido <= 0) {
+        alert('Informe um valor recebido válido.');
+        return;
+      }
+
+      // Marca o fiado como pago
+      f.status = 'pago';
+      f.pagoEm = new Date().toISOString();
+      f.formaPagamentoQuitacao = metodo;
+
+      // Lança como recebimento oficial no Caixa / Extrato
+      const tx = {
+        id: 'FC-' + Math.floor(1000 + Math.random() * 9000),
+        type: 'recebimento',
+        description: `Recebimento Fiado: ${f.clienteNome} (${f.descricao})`,
+        amount: valorRecebido,
+        category: 'Recebimento de Fiado',
+        paymentMethod: metodo,
+        date: new Date().toISOString(),
+        items: f.items || [{ name: `Fiado quitado (${f.clienteNome})`, quantity: 1, unitPrice: valorRecebido }]
+      };
+
+      transacoes.push(tx);
+      saveState();
+      closeModal('modalQuitarFiado');
+      renderAPagar();
+      renderDashboard();
+      renderExtrato();
+      atualizarBadgesFiado();
+
+      alert(`Conta de ${f.clienteNome} quitada com sucesso! O valor de ${formatBRL(valorRecebido)} foi lançado no Caixa de hoje como recebimento via ${metodo.toUpperCase()}.`);
+    }
+
+    function cobrarWhatsAppFiado(id) {
+      const f = fiados.find(item => item.id === id);
+      if (!f) return;
+
+      const saudacao = new Date().getHours() < 12 ? 'Bom dia' : 'Boa tarde';
+      const msg = `${saudacao}, ${f.clienteNome}! Tudo bem? Passando para lembrar da sua conta de ${formatBRL(f.valor)} na nossa feira referente a: ${f.descricao}. Quando puder acertar, estamos na feira ou aceitamos Pix! Muito obrigado.`;
+
+      if (f.clienteTelefone) {
+        let digitos = f.clienteTelefone.replace(/\D/g, '');
+        if (digitos.length === 10 || digitos.length === 11) {
+          digitos = '55' + digitos;
+        }
+        window.open(`https://api.whatsapp.com/send?phone=${digitos}&text=${encodeURIComponent(msg)}`, '_blank');
+      } else {
+        const tel = prompt('Informe o número de WhatsApp do cliente com DDD (Ex.: 11999998888):');
+        if (tel) {
+          let digitos = tel.replace(/\D/g, '');
+          if (digitos.length === 10 || digitos.length === 11) digitos = '55' + digitos;
+          window.open(`https://api.whatsapp.com/send?phone=${digitos}&text=${encodeURIComponent(msg)}`, '_blank');
+        }
+      }
+    }
+
+    function excluirFiado(id) {
+      const f = fiados.find(item => item.id === id);
+      if (!f) return;
+
+      if (!confirm(`Deseja realmente remover o registro de fiado de "${f.clienteNome}"?`)) {
+        return;
+      }
+
+      fiados = fiados.filter(item => item.id !== id);
+      saveState();
+      renderAPagar();
+      renderDashboard();
+      atualizarBadgesFiado();
     }
 
     /* =====================================================================
@@ -2120,11 +2897,58 @@
       alert('Caixa zerado com sucesso para um novo turno ou dia de feira!');
     }
 
-    // Modal Novo Produto
+    // Modal Novo / Editar Produto
     function openModalNovoProduto() {
       document.getElementById('formNovoProduto').reset();
+      document.getElementById('prodEditId').value = '';
       document.getElementById('prodIcone').value = '🥟';
+      document.getElementById('modalProdutoTitulo').textContent = 'Novo Produto no PDV';
+      document.getElementById('modalProdutoSubtitulo').textContent = 'Adicione ao seu catálogo de feira.';
+      document.getElementById('btnSubmitProduto').textContent = 'Cadastrar Produto';
+      document.getElementById('btnExcluirProdutoModal').classList.add('hidden');
       openModal('modalNovoProduto');
+    }
+
+    function openModalEditarProduto(id, event) {
+      if (event) event.stopPropagation();
+      const prod = produtos.find(p => p.id === id);
+      if (!prod) return;
+
+      document.getElementById('prodEditId').value = prod.id;
+      document.getElementById('prodNome').value = prod.nome;
+      document.getElementById('prodPreco').value = prod.preco;
+      document.getElementById('prodUnidade').value = prod.unidade || 'un';
+      document.getElementById('prodCategoria').value = prod.categoria || 'Pastéis & Salgados';
+      document.getElementById('prodIcone').value = prod.icone || '📦';
+      
+      document.getElementById('modalProdutoTitulo').textContent = 'Editar Produto';
+      document.getElementById('modalProdutoSubtitulo').textContent = 'Altere os dados deste produto do catálogo.';
+      document.getElementById('btnSubmitProduto').textContent = 'Salvar Alterações';
+      document.getElementById('btnExcluirProdutoModal').classList.remove('hidden');
+
+      openModal('modalNovoProduto');
+    }
+
+    function excluirProdutoDoModal() {
+      const id = document.getElementById('prodEditId').value;
+      if (!id) return;
+      excluirProduto(id);
+    }
+
+    function excluirProduto(id, event) {
+      if (event) event.stopPropagation();
+      const prod = produtos.find(p => p.id === id);
+      if (!prod) return;
+
+      if (!confirm(`Deseja realmente remover o produto "${prod.nome}" do catálogo?`)) {
+        return;
+      }
+
+      produtos = produtos.filter(p => p.id !== id);
+      carrinho = carrinho.filter(c => c.id !== id);
+      saveState();
+      closeModal('modalNovoProduto');
+      renderPDV();
     }
 
     function setProdEmoji(emoji) {
@@ -2133,6 +2957,7 @@
 
     function salvarNovoProduto(e) {
       e.preventDefault();
+      const editId = document.getElementById('prodEditId').value.trim();
       const nome = document.getElementById('prodNome').value.trim();
       const preco = parseFloat(document.getElementById('prodPreco').value) || 0;
       const unidade = document.getElementById('prodUnidade').value;
@@ -2144,16 +2969,40 @@
         return;
       }
 
-      const novoProduto = {
-        id: 'p_' + Date.now(),
-        nome,
-        preco,
-        unidade,
-        categoria,
-        icone
-      };
+      if (editId) {
+        // Editando produto existente
+        const idx = produtos.findIndex(p => p.id === editId);
+        if (idx !== -1) {
+          produtos[idx] = {
+            ...produtos[idx],
+            nome,
+            preco,
+            unidade,
+            categoria,
+            icone
+          };
+        }
+        // Atualiza no carrinho caso esteja adicionado
+        const inCart = carrinho.find(c => c.id === editId);
+        if (inCart) {
+          inCart.nome = nome;
+          inCart.preco = preco;
+          inCart.unidade = unidade;
+          inCart.icone = icone;
+        }
+      } else {
+        // Criando novo produto
+        const novoProduto = {
+          id: 'p_' + Date.now(),
+          nome,
+          preco,
+          unidade,
+          categoria,
+          icone
+        };
+        produtos.push(novoProduto);
+      }
 
-      produtos.push(novoProduto);
       saveState();
       closeModal('modalNovoProduto');
       renderPDV();
