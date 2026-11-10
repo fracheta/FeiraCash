@@ -1,0 +1,6 @@
+{
+  "name": "FeiraCash Pro - Gestão Financeira e PDV para Feiras",
+  "description": "Sistema completo de Gestão Financeira e Ponto de Venda (PDV) para feiras, produtores rurais e comércio rápido com troco, extrato, gráficos e relatórios.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

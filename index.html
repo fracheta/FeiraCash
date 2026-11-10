@@ -1,0 +1,2253 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FeiraCash Pro — Gestão Financeira e PDV para Feiras</title>
+  <meta name="description" content="Sistema de Gestão Financeira e Ponto de Venda (PDV) ágil para feirantes, produtores rurais e autônomos." />
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="FeiraCash Pro" />
+
+  <!-- OpenGraph / Social Share Meta Tags -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="FeiraCash Pro — Gestão Financeira e PDV para Feiras" />
+  <meta property="og:description" content="Sistema completo de Gestão Financeira e Ponto de Venda (PDV) ágil para feiras, comércio e autônomos." />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="FeiraCash Pro — Gestão Financeira e PDV para Feiras" />
+  <meta name="twitter:description" content="Sistema completo de Gestão Financeira e Ponto de Venda (PDV) ágil para feiras, comércio e autônomos." />
+
+  <!-- Favicon SVG Integrado (Sem requisições 404 de favicon.ico) -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%23059669'/><text y='.9em' x='50%25' text-anchor='middle' font-size='65' font-family='sans-serif'>💵</text></svg>" />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
+
+  <!-- FontAwesome 6 (Classes Válidas) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace']
+          },
+          colors: {
+            feira: {
+              50: '#ecfdf5',
+              100: '#d1fae5',
+              200: '#a7f3d0',
+              500: '#10b981',
+              600: '#059669',
+              700: '#047857',
+              800: '#065f46',
+              900: '#064e3b',
+              accent: '#f59e0b',
+              accentDark: '#d97706'
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    /* Estilos globais e custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 99px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    /* Animações suaves de transição */
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.25s ease-out forwards;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Modal Transitions */
+    .modal-backdrop {
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease-in-out;
+    }
+    .modal-backdrop.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .modal-box {
+      transform: scale(0.95);
+      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .modal-backdrop.open .modal-box {
+      transform: scale(1);
+    }
+
+    /* Badge pulse */
+    .live-pulse {
+      animation: livePulse 2s infinite;
+    }
+    @keyframes livePulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.1); }
+    }
+
+    /* CSS de Impressão @media print */
+    @media print {
+      body {
+        background: #ffffff !important;
+        color: #000000 !important;
+        font-size: 12pt;
+      }
+      .no-print, header, nav, #bottomNav, .btn-action, .modal-backdrop {
+        display: none !important;
+      }
+      #printReceiptContainer {
+        display: block !important;
+        width: 100% !important;
+        max-width: 80mm !important;
+        margin: 0 auto !important;
+        padding: 8px !important;
+        font-family: 'Courier New', Courier, monospace !important;
+      }
+      .print-full-report {
+        display: block !important;
+      }
+      .card-box {
+        border: 1px solid #ccc !important;
+        box-shadow: none !important;
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col pb-20 md:pb-6">
+
+  <!-- ==========================================
+       TOPO / CABEÇALHO PRINCIPAL
+  ========================================== -->
+  <header class="no-print bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-30 shadow-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16 sm:h-20">
+        
+        <!-- Logomarca & Status -->
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 text-white flex items-center justify-center text-xl shadow-lg shadow-emerald-500/20">
+            <i class="fa-solid fa-cash-register"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-extrabold text-lg sm:text-2xl tracking-tight text-white">Feira<span class="text-emerald-400">Cash</span></span>
+              <span class="text-[10px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full">PRO</span>
+            </div>
+            <div class="flex items-center gap-2 text-xs text-slate-400">
+              <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 live-pulse"></span>
+              <span id="caixaStatusText" class="font-medium">Caixa Aberto</span>
+              <span class="text-slate-600">•</span>
+              <span id="dataAtualBadge" class="hidden sm:inline text-slate-300"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Desktop Navigation Tabs -->
+        <nav class="hidden md:flex items-center gap-1 bg-slate-800/80 p-1.5 rounded-2xl border border-slate-700/60">
+          <button onclick="switchTab('dashboard')" id="btnTab-dashboard" class="tab-btn px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-150 flex items-center gap-2 bg-emerald-600 text-white shadow-sm">
+            <i class="fa-solid fa-chart-pie"></i> Dashboard
+          </button>
+          <button onclick="switchTab('pdv')" id="btnTab-pdv" class="tab-btn px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-150 flex items-center gap-2 text-slate-300 hover:text-white hover:bg-slate-700/50">
+            <i class="fa-solid fa-basket-shopping"></i> PDV Rápido
+          </button>
+          <button onclick="switchTab('extrato')" id="btnTab-extrato" class="tab-btn px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-150 flex items-center gap-2 text-slate-300 hover:text-white hover:bg-slate-700/50">
+            <i class="fa-solid fa-receipt"></i> Extrato
+          </button>
+          <button onclick="switchTab('relatorios')" id="btnTab-relatorios" class="tab-btn px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-150 flex items-center gap-2 text-slate-300 hover:text-white hover:bg-slate-700/50">
+            <i class="fa-solid fa-chart-line"></i> Relatórios
+          </button>
+        </nav>
+
+        <!-- Ações Globais do Topo -->
+        <div class="flex items-center gap-2 sm:gap-3">
+          <!-- Novo Lançamento Rápido -->
+          <button onclick="openModalLancamento()" class="min-h-[40px] px-3 sm:px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-bold rounded-xl shadow-sm transition-colors flex items-center gap-2">
+            <i class="fa-solid fa-plus-circle"></i>
+            <span class="hidden sm:inline">Lançamento</span>
+          </button>
+
+          <!-- Zerar Caixa -->
+          <button onclick="openModalZerarCaixa()" title="Zerar / Fechar Caixa" class="min-h-[40px] px-3 py-2 bg-slate-800 hover:bg-rose-950/80 hover:text-rose-300 text-slate-300 border border-slate-700 text-xs sm:text-sm font-semibold rounded-xl transition-all flex items-center gap-1.5">
+            <i class="fa-solid fa-power-off text-rose-400"></i>
+            <span class="hidden lg:inline">Zerar Caixa</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- ==========================================
+       CONTEÚDO PRINCIPAL (ABAS)
+  ========================================== -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+    <!-- ==========================================================
+         ABA 1: DASHBOARD
+    ========================================================== -->
+    <section id="tab-dashboard" class="tab-content active space-y-6">
+      
+      <!-- Banner de Boas-vindas e Saldo Principal -->
+      <div class="bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-950 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden border border-slate-700/60">
+        <div class="absolute -right-10 -bottom-10 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div>
+            <div class="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-emerald-400 bg-emerald-950/80 border border-emerald-700/50 px-3 py-1 rounded-full mb-3">
+              <i class="fa-solid fa-scale-balanced"></i> Saldo Líquido da Feira
+            </div>
+            <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight" id="kpiSaldoLiquido">R$ 0,00</h1>
+            <p class="text-slate-300 text-sm mt-1">Saldo em tempo real considerando todos os recebimentos e saídas.</p>
+          </div>
+
+          <!-- Ações Rápidas do Dashboard -->
+          <div class="flex flex-wrap items-center gap-3">
+            <button onclick="switchTab('pdv')" class="px-5 py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm rounded-xl shadow-lg transition-all flex items-center gap-2">
+              <i class="fa-solid fa-basket-shopping text-base"></i> Abrir PDV Rápido
+            </button>
+            <button onclick="openModalCalculadoraTroco()" class="px-4 py-3 bg-slate-800 hover:bg-slate-700 text-white font-semibold text-sm rounded-xl border border-slate-600 transition-all flex items-center gap-2">
+              <i class="fa-solid fa-calculator text-amber-400"></i> Troco Rápido
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Grid de Indicadores Principais (KPIs) -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        
+        <!-- Total Recebimentos -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Total Recebido</span>
+            <div class="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-sm">
+              <i class="fa-solid fa-arrow-down-long"></i>
+            </div>
+          </div>
+          <div>
+            <h3 class="text-xl sm:text-2xl font-extrabold text-emerald-600" id="kpiTotalRecebimentos">R$ 0,00</h3>
+            <span class="text-xs text-slate-400 mt-1 block" id="kpiQtdRecebimentos">0 vendas realizadas</span>
+          </div>
+        </div>
+
+        <!-- Total Pagamentos -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Total Pagamentos</span>
+            <div class="w-9 h-9 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center text-sm">
+              <i class="fa-solid fa-arrow-up-long"></i>
+            </div>
+          </div>
+          <div>
+            <h3 class="text-xl sm:text-2xl font-extrabold text-rose-600" id="kpiTotalPagamentos">R$ 0,00</h3>
+            <span class="text-xs text-slate-400 mt-1 block" id="kpiQtdPagamentos">0 saídas / despesas</span>
+          </div>
+        </div>
+
+        <!-- Ticket Médio -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Ticket Médio</span>
+            <div class="w-9 h-9 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center text-sm">
+              <i class="fa-solid fa-tag"></i>
+            </div>
+          </div>
+          <div>
+            <h3 class="text-xl sm:text-2xl font-extrabold text-slate-800" id="kpiTicketMedio">R$ 0,00</h3>
+            <span class="text-xs text-slate-400 mt-1 block">Por cliente atendido</span>
+          </div>
+        </div>
+
+        <!-- Total de Operações -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Total Operações</span>
+            <div class="w-9 h-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center text-sm">
+              <i class="fa-solid fa-list-check"></i>
+            </div>
+          </div>
+          <div>
+            <h3 class="text-xl sm:text-2xl font-extrabold text-slate-800" id="kpiTotalOperacoes">0</h3>
+            <span class="text-xs text-slate-400 mt-1 block">Registros no dia</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Breakdown por Forma de Pagamento -->
+      <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="font-bold text-slate-800 text-base flex items-center gap-2">
+            <i class="fa-solid fa-wallet text-emerald-600"></i> Faturamento por Forma de Pagamento
+          </h2>
+          <span class="text-xs text-slate-500">Valores brutos recebidos</span>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <!-- Dinheiro -->
+          <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/60">
+            <div class="flex items-center gap-2 text-xs font-semibold text-emerald-700 mb-1">
+              <i class="fa-solid fa-money-bill-wave"></i> Dinheiro
+            </div>
+            <div class="text-lg font-bold text-slate-800" id="payDinheiro">R$ 0,00</div>
+            <span class="text-[11px] text-slate-400" id="payDinheiroPct">0%</span>
+          </div>
+
+          <!-- Pix -->
+          <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/60">
+            <div class="flex items-center gap-2 text-xs font-semibold text-teal-700 mb-1">
+              <i class="fa-brands fa-pix"></i> Pix
+            </div>
+            <div class="text-lg font-bold text-slate-800" id="payPix">R$ 0,00</div>
+            <span class="text-[11px] text-slate-400" id="payPixPct">0%</span>
+          </div>
+
+          <!-- Cartão Débito -->
+          <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/60">
+            <div class="flex items-center gap-2 text-xs font-semibold text-blue-700 mb-1">
+              <i class="fa-solid fa-credit-card"></i> Débito
+            </div>
+            <div class="text-lg font-bold text-slate-800" id="payDebito">R$ 0,00</div>
+            <span class="text-[11px] text-slate-400" id="payDebitoPct">0%</span>
+          </div>
+
+          <!-- Cartão Crédito -->
+          <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/60">
+            <div class="flex items-center gap-2 text-xs font-semibold text-purple-700 mb-1">
+              <i class="fa-solid fa-credit-card"></i> Crédito
+            </div>
+            <div class="text-lg font-bold text-slate-800" id="payCredito">R$ 0,00</div>
+            <span class="text-[11px] text-slate-400" id="payCreditoPct">0%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Últimas Vendas do Dia e Atalhos -->
+      <div class="grid lg:grid-cols-3 gap-6">
+        
+        <!-- Tabela Rápida dos Últimos Lançamentos -->
+        <div class="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="font-bold text-slate-800 text-base flex items-center gap-2">
+                <i class="fa-solid fa-clock-rotate-left text-slate-500"></i> Últimas Movimentações
+              </h2>
+              <button onclick="switchTab('extrato')" class="text-xs text-emerald-600 font-bold hover:underline">
+                Ver Todas &rarr;
+              </button>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs">
+                <thead>
+                  <tr class="border-b border-slate-100 text-slate-400 uppercase tracking-wider">
+                    <th class="pb-2 font-semibold">Hora</th>
+                    <th class="pb-2 font-semibold">Descrição</th>
+                    <th class="pb-2 font-semibold">Pagamento</th>
+                    <th class="pb-2 font-semibold text-right">Valor</th>
+                  </tr>
+                </thead>
+                <tbody id="dashUltimasTransacoesList" class="divide-y divide-slate-100">
+                  <!-- Injetado via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+            <span>Para relatórios completos e gráficos avançados, acesse a aba Relatórios.</span>
+            <button onclick="exportCSV()" class="font-semibold text-slate-700 hover:text-emerald-600 flex items-center gap-1">
+              <i class="fa-solid fa-file-csv"></i> Exportar CSV
+            </button>
+          </div>
+        </div>
+
+        <!-- Calculadora de Troco Rápida Integrada -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center gap-2 text-slate-800 font-bold text-base mb-1">
+              <i class="fa-solid fa-coins text-amber-500"></i> Calculadora de Troco
+            </div>
+            <p class="text-xs text-slate-500 mb-4">Calcule rapidamente o troco a devolver no dinheiro.</p>
+
+            <div class="space-y-3">
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">Valor da Compra (R$)</label>
+                <input type="number" step="0.01" id="calcDashTotal" placeholder="0,00" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm font-semibold focus:outline-none focus:border-emerald-500" oninput="calcTrocoDash()" />
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">Valor Recebido do Cliente (R$)</label>
+                <input type="number" step="0.01" id="calcDashRecebido" placeholder="0,00" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm font-semibold focus:outline-none focus:border-emerald-500" oninput="calcTrocoDash()" />
+              </div>
+
+              <!-- Atalhos de cédulas rápidas -->
+              <div class="flex flex-wrap gap-1.5 pt-1">
+                <button type="button" onclick="setCalcRecebido(10)" class="px-2.5 py-1 text-xs font-bold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700">R$ 10</button>
+                <button type="button" onclick="setCalcRecebido(20)" class="px-2.5 py-1 text-xs font-bold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700">R$ 20</button>
+                <button type="button" onclick="setCalcRecebido(50)" class="px-2.5 py-1 text-xs font-bold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700">R$ 50</button>
+                <button type="button" onclick="setCalcRecebido(100)" class="px-2.5 py-1 text-xs font-bold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700">R$ 100</button>
+              </div>
+
+              <!-- Resultado do Troco -->
+              <div class="p-3 rounded-xl bg-emerald-50 border border-emerald-200/70 text-center">
+                <span class="text-xs uppercase font-bold tracking-wider text-emerald-800 block">Troco a Devolver</span>
+                <span id="calcDashTroco" class="text-2xl font-extrabold text-emerald-700 block my-0.5">R$ 0,00</span>
+                <span id="calcDashSugestao" class="text-[11px] text-emerald-600 block">Aguardando valores...</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-4 pt-3 border-t border-slate-100 text-center">
+            <span class="text-[11px] text-slate-400">Troco exato e seguro para a correria da feira.</span>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ==========================================================
+         ABA 2: PONTO DE VENDA (PDV / CAIXA RÁPIDO)
+    ========================================================== -->
+    <section id="tab-pdv" class="tab-content space-y-6">
+      
+      <!-- Topo do PDV com Busca, Filtro de Categoria e Novo Produto -->
+      <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+        
+        <!-- Campo de Busca -->
+        <div class="relative flex-1">
+          <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+          <input type="text" id="pdvSearchInput" placeholder="Buscar produto por nome ou código..." oninput="filtrarProdutosPDV()" class="w-full pl-10 pr-4 py-2.5 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:border-emerald-500 focus:bg-white transition-all" />
+        </div>
+
+        <!-- Filtro Rápido de Categorias -->
+        <div class="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0" id="pdvCategoryFilterContainer">
+          <!-- Renderizado via JS dinamicamente -->
+        </div>
+
+        <!-- Botão Cadastrar Novo Produto -->
+        <button onclick="openModalNovoProduto()" class="min-h-[42px] px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm rounded-xl shadow-sm transition-colors flex items-center justify-center gap-2 whitespace-nowrap">
+          <i class="fa-solid fa-plus"></i> Novo Produto
+        </button>
+      </div>
+
+      <!-- Layout Dividido: Catálogo de Produtos (Esq.) e Carrinho / Comanda (Dir.) -->
+      <div class="grid lg:grid-cols-12 gap-6 items-start">
+        
+        <!-- Catálogo de Produtos (7 cols em desktop) -->
+        <div class="lg:col-span-7 space-y-4">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-500" id="pdvContadorProdutos">Catálogo de Produtos</span>
+            <span class="text-xs text-slate-400">Clique para adicionar ao carrinho</span>
+          </div>
+
+          <div id="pdvProductGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
+            <!-- Cards de produtos injetados dinamicamente via JS -->
+          </div>
+        </div>
+
+        <!-- Carrinho de Compras / Caixa Rápido (5 cols em desktop) -->
+        <div class="lg:col-span-5 bg-white rounded-2xl border border-slate-200 shadow-lg p-5 sticky top-24 space-y-4">
+          
+          <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-sm font-bold">
+                <i class="fa-solid fa-cart-shopping"></i>
+              </div>
+              <h2 class="font-extrabold text-slate-800 text-base">Comanda de Venda</h2>
+            </div>
+            <button onclick="limparCarrinho()" title="Limpar Carrinho" class="text-xs text-rose-600 hover:text-rose-700 font-semibold flex items-center gap-1">
+              <i class="fa-solid fa-trash-can"></i> Limpar
+            </button>
+          </div>
+
+          <!-- Lista de Itens no Carrinho -->
+          <div id="pdvCartItemsList" class="space-y-2 max-h-64 overflow-y-auto pr-1">
+            <!-- Injetado dinamicamente via JS -->
+          </div>
+
+          <!-- Resumo de Valores e Desconto -->
+          <div class="pt-3 border-t border-slate-100 space-y-2 text-xs">
+            <div class="flex items-center justify-between text-slate-600">
+              <span>Subtotal Itens:</span>
+              <span id="pdvCartSubtotal" class="font-semibold text-slate-800">R$ 0,00</span>
+            </div>
+            <div class="flex items-center justify-between text-slate-600">
+              <span>Desconto (R$):</span>
+              <input type="number" step="0.50" min="0" id="pdvCartDesconto" value="0.00" class="w-24 text-right px-2 py-1 border border-slate-300 rounded-lg font-semibold text-slate-800 text-xs focus:outline-none focus:border-emerald-500" oninput="atualizarTotaisCarrinho()" />
+            </div>
+            <div class="flex items-center justify-between text-base font-extrabold text-slate-900 pt-1 border-t border-slate-100">
+              <span>Total a Pagar:</span>
+              <span id="pdvCartTotal" class="text-xl sm:text-2xl text-emerald-600">R$ 0,00</span>
+            </div>
+          </div>
+
+          <!-- Forma de Pagamento -->
+          <div class="space-y-2 pt-1">
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-600">Forma de Pagamento</label>
+            <div class="grid grid-cols-4 gap-2">
+              <button type="button" onclick="setPdvPaymentMethod('dinheiro')" id="pdvPayBtn-dinheiro" class="pdv-pay-btn active py-2.5 px-1 rounded-xl text-xs font-bold flex flex-col items-center justify-center gap-1 border border-emerald-500 bg-emerald-50 text-emerald-800 transition-all">
+                <i class="fa-solid fa-money-bill-wave text-base"></i>
+                <span>Dinheiro</span>
+              </button>
+              <button type="button" onclick="setPdvPaymentMethod('pix')" id="pdvPayBtn-pix" class="pdv-pay-btn py-2.5 px-1 rounded-xl text-xs font-bold flex flex-col items-center justify-center gap-1 border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 transition-all">
+                <i class="fa-brands fa-pix text-base text-teal-600"></i>
+                <span>Pix</span>
+              </button>
+              <button type="button" onclick="setPdvPaymentMethod('debito')" id="pdvPayBtn-debito" class="pdv-pay-btn py-2.5 px-1 rounded-xl text-xs font-bold flex flex-col items-center justify-center gap-1 border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 transition-all">
+                <i class="fa-solid fa-credit-card text-base text-blue-600"></i>
+                <span>Débito</span>
+              </button>
+              <button type="button" onclick="setPdvPaymentMethod('credito')" id="pdvPayBtn-credito" class="pdv-pay-btn py-2.5 px-1 rounded-xl text-xs font-bold flex flex-col items-center justify-center gap-1 border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 transition-all">
+                <i class="fa-solid fa-credit-card text-base text-purple-600"></i>
+                <span>Crédito</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Painel Dinâmico de Troco para Dinheiro -->
+          <div id="pdvPainelTroco" class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+            <div class="flex items-center justify-between">
+              <label class="text-xs font-bold text-slate-700">Valor Recebido (R$)</label>
+              <button type="button" onclick="setPdvRecebidoExato()" class="text-[11px] text-emerald-600 font-bold hover:underline">
+                Valor Exato
+              </button>
+            </div>
+            
+            <input type="number" step="0.01" id="pdvValorRecebido" placeholder="0,00" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-base font-bold text-slate-800 focus:outline-none focus:border-emerald-500" oninput="calcularTrocoPDV()" />
+
+            <!-- Atalhos de valores rápidos -->
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <button type="button" onclick="setPdvRecebido(10)" class="px-2 py-0.5 text-xs font-semibold bg-white border border-slate-300 rounded-lg hover:bg-slate-100">R$10</button>
+              <button type="button" onclick="setPdvRecebido(20)" class="px-2 py-0.5 text-xs font-semibold bg-white border border-slate-300 rounded-lg hover:bg-slate-100">R$20</button>
+              <button type="button" onclick="setPdvRecebido(50)" class="px-2 py-0.5 text-xs font-semibold bg-white border border-slate-300 rounded-lg hover:bg-slate-100">R$50</button>
+              <button type="button" onclick="setPdvRecebido(100)" class="px-2 py-0.5 text-xs font-semibold bg-white border border-slate-300 rounded-lg hover:bg-slate-100">R$100</button>
+            </div>
+
+            <!-- Exibição do Troco -->
+            <div class="flex items-center justify-between p-2 rounded-lg bg-emerald-100/70 border border-emerald-300 text-emerald-900">
+              <span class="text-xs font-bold">TROCO:</span>
+              <span id="pdvTrocoDisplay" class="text-lg font-extrabold text-emerald-800">R$ 0,00</span>
+            </div>
+            <div id="pdvTrocoNotasSugestao" class="text-[11px] text-emerald-700 font-medium"></div>
+          </div>
+
+          <!-- Botão de Finalizar Venda -->
+          <button onclick="finalizarVendaPDV()" id="btnFinalizarVenda" class="w-full min-h-[50px] bg-emerald-600 hover:bg-emerald-500 active:scale-[0.99] text-white font-extrabold text-sm uppercase tracking-wider rounded-xl shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-2 transition-all">
+            <i class="fa-solid fa-check-circle text-lg"></i>
+            <span>Finalizar Venda</span>
+          </button>
+
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ==========================================================
+         ABA 3: EXTRATO COMPLETO DE MOVIMENTAÇÕES
+    ========================================================== -->
+    <section id="tab-extrato" class="tab-content space-y-6">
+      
+      <!-- Barra Superior de Filtros e Busca -->
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+        <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+          <div>
+            <h2 class="font-extrabold text-slate-800 text-lg flex items-center gap-2">
+              <i class="fa-solid fa-receipt text-emerald-600"></i> Extrato de Movimentações
+            </h2>
+            <p class="text-xs text-slate-500">Histórico de todas as vendas e retiradas da feira.</p>
+          </div>
+
+          <!-- Ações de Exportação e Impressão -->
+          <div class="flex items-center gap-2">
+            <button onclick="exportCSV()" class="min-h-[40px] px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl border border-slate-300 transition-colors flex items-center gap-2">
+              <i class="fa-solid fa-download text-emerald-600"></i> Exportar CSV
+            </button>
+            <button onclick="window.print()" class="min-h-[40px] px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl border border-slate-300 transition-colors flex items-center gap-2">
+              <i class="fa-solid fa-print"></i> Imprimir Extrato
+            </button>
+          </div>
+        </div>
+
+        <!-- Filtros Rápidos -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-2 border-t border-slate-100">
+          
+          <!-- Filtro de Tipo -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-1">Tipo de Movimento</label>
+            <select id="extratoFiltroTipo" onchange="renderExtrato()" class="w-full text-xs font-semibold bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 focus:outline-none focus:border-emerald-500">
+              <option value="todos">Todos os Tipos</option>
+              <option value="recebimento">Apenas Recebimentos (+)</option>
+              <option value="pagamento">Apenas Pagamentos / Despesas (-)</option>
+            </select>
+          </div>
+
+          <!-- Filtro de Forma de Pagamento -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-1">Forma de Pagamento</label>
+            <select id="extratoFiltroPagamento" onchange="renderExtrato()" class="w-full text-xs font-semibold bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 focus:outline-none focus:border-emerald-500">
+              <option value="todos">Todas as Formas</option>
+              <option value="dinheiro">Dinheiro</option>
+              <option value="pix">Pix</option>
+              <option value="debito">Cartão de Débito</option>
+              <option value="credito">Cartão de Crédito</option>
+            </select>
+          </div>
+
+          <!-- Filtro de Período -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-1">Período</label>
+            <select id="extratoFiltroPeriodo" onchange="renderExtrato()" class="w-full text-xs font-semibold bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 focus:outline-none focus:border-emerald-500">
+              <option value="todos">Todo o Histórico</option>
+              <option value="hoje" selected>Apenas Hoje</option>
+              <option value="ultimos7dias">Últimos 7 Dias</option>
+            </select>
+          </div>
+
+          <!-- Busca Textual -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-1">Buscar</label>
+            <div class="relative">
+              <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+              <input type="text" id="extratoBuscaInput" oninput="renderExtrato()" placeholder="Descrição ou produto..." class="w-full pl-8 pr-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:border-emerald-500" />
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Indicador de Registros Filtrados -->
+        <div class="flex items-center justify-between text-xs text-slate-500 pt-1">
+          <span id="extratoResumoContagem">Mostrando 0 registros</span>
+          <span id="extratoResumoSoma" class="font-bold text-slate-800">Total filtrado: R$ 0,00</span>
+        </div>
+      </div>
+
+      <!-- Tabela do Extrato -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase tracking-wider font-bold">
+              <tr>
+                <th class="py-3 px-4">Data/Hora</th>
+                <th class="py-3 px-4">Tipo</th>
+                <th class="py-3 px-4">Descrição & Itens</th>
+                <th class="py-3 px-4">Categoria</th>
+                <th class="py-3 px-4">Pagamento</th>
+                <th class="py-3 px-4 text-right">Valor</th>
+                <th class="py-3 px-4 text-center no-print">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="extratoTabelaBody" class="divide-y divide-slate-100 text-slate-700">
+              <!-- Injetado dinamicamente via JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Mensagem de lista vazia -->
+        <div id="extratoVazioAlert" class="hidden text-center py-12 text-slate-400">
+          <i class="fa-regular fa-folder-open text-4xl mb-3 text-slate-300"></i>
+          <p class="font-medium">Nenhuma movimentação encontrada para os filtros selecionados.</p>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ==========================================================
+         ABA 4: RELATÓRIOS & GRÁFICOS (CHART.JS)
+    ========================================================== -->
+    <section id="tab-relatorios" class="tab-content space-y-6">
+      
+      <!-- Topo dos Relatórios -->
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <h2 class="font-extrabold text-slate-800 text-lg flex items-center gap-2">
+            <i class="fa-solid fa-chart-line text-emerald-600"></i> Relatórios Financeiros & Gráficos
+          </h2>
+          <p class="text-xs text-slate-500">Análise de categorias, horários de pico e meios de pagamento.</p>
+        </div>
+        <button onclick="window.print()" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl flex items-center gap-2 transition-colors">
+          <i class="fa-solid fa-print"></i> Imprimir Relatório
+        </button>
+      </div>
+
+      <!-- Grid com os 2 Gráficos Principais (Donut de Categorias e Barras de Fluxo) -->
+      <div class="grid lg:grid-cols-2 gap-6">
+        
+        <!-- Gráfico de Rosca (Donut) - Distribuição por Categorias -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                <i class="fa-solid fa-chart-pie text-emerald-600"></i> Recebimentos por Categoria
+              </h3>
+              <span class="text-xs text-slate-400">Distribuição Percentual</span>
+            </div>
+            <div class="relative w-full aspect-square max-h-72 mx-auto flex items-center justify-center">
+              <canvas id="chartCategorias"></canvas>
+            </div>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 text-xs text-slate-500 text-center" id="chartCategoriasLegend">
+            <!-- Legenda com percentuais -->
+          </div>
+        </div>
+
+        <!-- Gráfico de Barras - Fluxo de Caixa (Entradas x Saídas) -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                <i class="fa-solid fa-chart-simple text-blue-600"></i> Fluxo de Caixa (Entradas vs Saídas)
+              </h3>
+              <span class="text-xs text-slate-400">Comparativo do Período</span>
+            </div>
+            <div class="relative w-full aspect-square max-h-72 mx-auto flex items-center justify-center">
+              <canvas id="chartFluxoCaixa"></canvas>
+            </div>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-around text-xs">
+            <span class="text-emerald-700 font-bold" id="relatorioTotalEntradas">Entradas: R$ 0,00</span>
+            <span class="text-rose-700 font-bold" id="relatorioTotalSaidas">Saídas: R$ 0,00</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Resumo Estratégico da Feira -->
+      <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+        <h3 class="font-bold text-slate-800 text-sm mb-4 flex items-center gap-2">
+          <i class="fa-solid fa-lightbulb text-amber-500"></i> Indicadores de Desempenho da Feira
+        </h3>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/70">
+            <span class="text-slate-400 block uppercase font-bold mb-1">Produto Mais Vendido</span>
+            <strong class="text-slate-800 text-sm block" id="relatorioTopProduto">-</strong>
+            <span class="text-slate-500 text-[11px]" id="relatorioTopProdutoQtd">0 unidades</span>
+          </div>
+
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/70">
+            <span class="text-slate-400 block uppercase font-bold mb-1">Forma Preferida de Pagamento</span>
+            <strong class="text-slate-800 text-sm block" id="relatorioTopPagamento">-</strong>
+            <span class="text-slate-500 text-[11px]" id="relatorioTopPagamentoValor">R$ 0,00 arrecadados</span>
+          </div>
+
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/70">
+            <span class="text-slate-400 block uppercase font-bold mb-1">Taxa de Conversão em Dinheiro</span>
+            <strong class="text-slate-800 text-sm block" id="relatorioPctDinheiro">0%</strong>
+            <span class="text-slate-500 text-[11px]">Dinheiro vivo em caixa</span>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ==========================================
+       BARRA DE NAVEGAÇÃO MOBILE (BOTTOM NAV)
+  ========================================== -->
+  <div id="bottomNav" class="no-print md:hidden fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-800 z-30 px-3 py-2 flex items-center justify-around shadow-2xl">
+    <button onclick="switchTab('dashboard')" id="mobileNav-dashboard" class="mobile-nav-btn text-emerald-400 flex flex-col items-center gap-1 text-[11px] font-bold">
+      <i class="fa-solid fa-chart-pie text-lg"></i>
+      <span>Dashboard</span>
+    </button>
+    <button onclick="switchTab('pdv')" id="mobileNav-pdv" class="mobile-nav-btn text-slate-400 flex flex-col items-center gap-1 text-[11px] font-bold">
+      <i class="fa-solid fa-basket-shopping text-lg"></i>
+      <span>PDV</span>
+    </button>
+    <button onclick="switchTab('extrato')" id="mobileNav-extrato" class="mobile-nav-btn text-slate-400 flex flex-col items-center gap-1 text-[11px] font-bold">
+      <i class="fa-solid fa-receipt text-lg"></i>
+      <span>Extrato</span>
+    </button>
+    <button onclick="switchTab('relatorios')" id="mobileNav-relatorios" class="mobile-nav-btn text-slate-400 flex flex-col items-center gap-1 text-[11px] font-bold">
+      <i class="fa-solid fa-chart-line text-lg"></i>
+      <span>Relatórios</span>
+    </button>
+  </div>
+
+  <!-- ==========================================
+       MODAIS DO SISTEMA
+  ========================================== -->
+
+  <!-- 1. MODAL: ZERAR / FECHAR CAIXA -->
+  <div id="modalZerarCaixa" class="modal-backdrop fixed inset-0 bg-slate-950/70 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+    <div class="modal-box bg-white w-full max-w-md rounded-3xl p-6 sm:p-7 shadow-2xl border border-slate-200 space-y-5">
+      
+      <div class="flex items-center gap-3 text-rose-600">
+        <div class="w-12 h-12 rounded-2xl bg-rose-100 flex items-center justify-center text-xl">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <div>
+          <h3 class="font-extrabold text-slate-900 text-lg leading-tight">Zerar e Fechar Caixa?</h3>
+          <p class="text-xs text-slate-500">Essa ação reinicia os registros do dia atual.</p>
+        </div>
+      </div>
+
+      <!-- Resumo do Fechamento -->
+      <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs space-y-2">
+        <div class="flex justify-between text-slate-600">
+          <span>Total Recebido no Dia:</span>
+          <strong id="modalZerarTotalRecebido" class="text-emerald-600">R$ 0,00</strong>
+        </div>
+        <div class="flex justify-between text-slate-600">
+          <span>Total Pago no Dia:</span>
+          <strong id="modalZerarTotalPago" class="text-rose-600">R$ 0,00</strong>
+        </div>
+        <div class="flex justify-between text-slate-800 pt-1 border-t border-slate-200 font-bold text-sm">
+          <span>Saldo Líquido Final:</span>
+          <span id="modalZerarSaldoFinal">R$ 0,00</span>
+        </div>
+        <div class="flex justify-between text-emerald-800 text-[11px] pt-1">
+          <span>Dinheiro Físico em Gaveta:</span>
+          <span id="modalZerarDinheiroGaveta" class="font-bold">R$ 0,00</span>
+        </div>
+      </div>
+
+      <div class="text-xs text-slate-500">
+        <p>Recomendamos baixar o relatório em arquivo CSV antes de confirmar a limpeza para manter seu histórico seguro.</p>
+      </div>
+
+      <!-- Botões de Ação -->
+      <div class="space-y-2 pt-1">
+        <button onclick="exportCSV()" class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl border border-slate-300 transition-colors flex items-center justify-center gap-2">
+          <i class="fa-solid fa-download text-emerald-600"></i> Baixar Relatório CSV Primeiro
+        </button>
+        <button onclick="confirmarZerarCaixa()" class="w-full py-3 bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-xs uppercase tracking-wider rounded-xl shadow-lg shadow-rose-600/20 transition-all flex items-center justify-center gap-2">
+          <i class="fa-solid fa-trash-can"></i> Sim, Zerar Caixa Agora
+        </button>
+        <button onclick="closeModal('modalZerarCaixa')" class="w-full py-2.5 text-slate-500 hover:text-slate-800 font-semibold text-xs transition-colors">
+          Cancelar
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 2. MODAL: CADASTRAR NOVO PRODUTO NO PDV -->
+  <div id="modalNovoProduto" class="modal-backdrop fixed inset-0 bg-slate-950/70 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+    <div class="modal-box bg-white w-full max-w-md rounded-3xl p-6 sm:p-7 shadow-2xl border border-slate-200 space-y-5">
+      
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-lg font-bold">
+            <i class="fa-solid fa-plus"></i>
+          </div>
+          <div>
+            <h3 class="font-extrabold text-slate-900 text-lg">Novo Produto no PDV</h3>
+            <p class="text-xs text-slate-500">Adicione ao seu catálogo de feira.</p>
+          </div>
+        </div>
+        <button onclick="closeModal('modalNovoProduto')" class="w-8 h-8 rounded-full bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form id="formNovoProduto" onsubmit="salvarNovoProduto(event)" class="space-y-4 text-xs">
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Nome do Produto *</label>
+          <input type="text" id="prodNome" required placeholder="Ex.: Pastel de Carne Especial" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:border-emerald-500 text-sm font-semibold" />
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Preço (R$) *</label>
+            <input type="number" step="0.10" min="0.10" id="prodPreco" required placeholder="12,00" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:border-emerald-500 text-sm font-semibold" />
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Unidade</label>
+            <select id="prodUnidade" class="w-full px-3 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:border-emerald-500 font-semibold bg-white">
+              <option value="un">un (unidade)</option>
+              <option value="kg">kg (quilo)</option>
+              <option value="bandeja">bandeja</option>
+              <option value="duzia">dúzia</option>
+              <option value="copo">copo</option>
+              <option value="porcao">porção</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Categoria *</label>
+          <select id="prodCategoria" required class="w-full px-3 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:border-emerald-500 font-semibold bg-white">
+            <option value="Pastéis & Salgados">Pastéis & Salgados</option>
+            <option value="Bebidas & Caldos">Bebidas & Caldos</option>
+            <option value="Hortifruti & Orgânicos">Hortifruti & Orgânicos</option>
+            <option value="Doces & Queijos">Doces & Queijos</option>
+            <option value="Artesanato">Artesanato</option>
+            <option value="Outros">Outros</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Ícone / Emoji Visual</label>
+          <div class="flex items-center gap-2">
+            <input type="text" id="prodIcone" maxlength="4" value="🥟" class="w-16 text-center text-xl px-2 py-2 border border-slate-300 rounded-xl focus:outline-none focus:border-emerald-500" />
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <button type="button" onclick="setProdEmoji('🥟')" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-base">🥟</button>
+              <button type="button" onclick="setProdEmoji('🥤')" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-base">🥤</button>
+              <button type="button" onclick="setProdEmoji('🍓')" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-base">🍓</button>
+              <button type="button" onclick="setProdEmoji('🧀')" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-base">🧀</button>
+              <button type="button" onclick="setProdEmoji('🍌')" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-base">🍌</button>
+              <button type="button" onclick="setProdEmoji('🌽')" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-base">🌽</button>
+              <button type="button" onclick="setProdEmoji('🍯')" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-base">🍯</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-3 flex items-center justify-end gap-2 border-t border-slate-100">
+          <button type="button" onclick="closeModal('modalNovoProduto')" class="px-4 py-2.5 text-slate-600 hover:bg-slate-100 rounded-xl font-semibold">
+            Cancelar
+          </button>
+          <button type="submit" class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-md transition-colors">
+            Cadastrar Produto
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+
+  <!-- 3. MODAL: LANÇAMENTO MANUAL (RECEBIMENTO OU PAGAMENTO) -->
+  <div id="modalLancamento" class="modal-backdrop fixed inset-0 bg-slate-950/70 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+    <div class="modal-box bg-white w-full max-w-md rounded-3xl p-6 sm:p-7 shadow-2xl border border-slate-200 space-y-5">
+      
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-slate-900 text-emerald-400 flex items-center justify-center text-lg font-bold">
+            <i class="fa-solid fa-plus-minus"></i>
+          </div>
+          <div>
+            <h3 class="font-extrabold text-slate-900 text-lg">Novo Lançamento</h3>
+            <p class="text-xs text-slate-500">Registre uma entrada ou saída avulsa.</p>
+          </div>
+        </div>
+        <button onclick="closeModal('modalLancamento')" class="w-8 h-8 rounded-full bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form id="formLancamento" onsubmit="salvarLancamentoManual(event)" class="space-y-4 text-xs">
+        
+        <!-- Seletor Tipo -->
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Tipo de Operação *</label>
+          <div class="grid grid-cols-2 gap-2">
+            <button type="button" onclick="setLancTipo('recebimento')" id="btnLancTipo-recebimento" class="py-2.5 rounded-xl font-bold border border-emerald-600 bg-emerald-50 text-emerald-700 flex items-center justify-center gap-2">
+              <i class="fa-solid fa-arrow-down-long"></i> Entrada (+)
+            </button>
+            <button type="button" onclick="setLancTipo('pagamento')" id="btnLancTipo-pagamento" class="py-2.5 rounded-xl font-bold border border-slate-200 bg-slate-50 text-slate-600 flex items-center justify-center gap-2">
+              <i class="fa-solid fa-arrow-up-long"></i> Saída (-)
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Descrição *</label>
+          <input type="text" id="lancDescricao" required placeholder="Ex.: Compra de gelo e copos descartáveis" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:border-emerald-500 text-sm font-semibold" />
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Valor (R$) *</label>
+            <input type="number" step="0.01" min="0.05" id="lancValor" required placeholder="0,00" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:border-emerald-500 text-sm font-semibold" />
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Forma Pagamento</label>
+            <select id="lancPagamento" class="w-full px-3 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:border-emerald-500 font-semibold bg-white">
+              <option value="dinheiro">Dinheiro</option>
+              <option value="pix">Pix</option>
+              <option value="debito">Cartão de Débito</option>
+              <option value="credito">Cartão de Crédito</option>
+              <option value="outro">Outro</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Categoria</label>
+          <select id="lancCategoria" class="w-full px-3 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:border-emerald-500 font-semibold bg-white">
+            <option value="Venda Balcão">Venda Balcão</option>
+            <option value="Insumos & Ingredientes">Insumos & Ingredientes</option>
+            <option value="Embalagens & Descartáveis">Embalagens & Descartáveis</option>
+            <option value="Combustível & Transporte">Combustível & Transporte</option>
+            <option value="Alimentação / Equipe">Alimentação / Equipe</option>
+            <option value="Taxa de Feira">Taxa de Feira</option>
+            <option value="Outros">Outros</option>
+          </select>
+        </div>
+
+        <div class="pt-3 flex items-center justify-end gap-2 border-t border-slate-100">
+          <button type="button" onclick="closeModal('modalLancamento')" class="px-4 py-2.5 text-slate-600 hover:bg-slate-100 rounded-xl font-semibold">
+            Cancelar
+          </button>
+          <button type="submit" class="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl shadow-md transition-colors">
+            Salvar Lançamento
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+
+  <!-- 4. MODAL: CALCULADORA DE TROCO EXPANDIDA -->
+  <div id="modalCalculadoraTroco" class="modal-backdrop fixed inset-0 bg-slate-950/70 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+    <div class="modal-box bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl border border-slate-200 space-y-4">
+      
+      <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+        <h3 class="font-extrabold text-slate-900 text-base flex items-center gap-2">
+          <i class="fa-solid fa-calculator text-amber-500"></i> Calculadora de Troco
+        </h3>
+        <button onclick="closeModal('modalCalculadoraTroco')" class="w-8 h-8 rounded-full bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Total da Compra (R$)</label>
+          <input type="number" step="0.01" id="modalTrocoTotal" placeholder="0,00" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-base font-bold focus:outline-none focus:border-emerald-500" oninput="calcularTrocoModal()" />
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Valor Recebido (R$)</label>
+          <input type="number" step="0.01" id="modalTrocoRecebido" placeholder="0,00" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-base font-bold focus:outline-none focus:border-emerald-500" oninput="calcularTrocoModal()" />
+        </div>
+
+        <div class="flex items-center gap-1.5 flex-wrap">
+          <button type="button" onclick="setModalTrocoRecebido(10)" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 font-bold rounded-lg text-slate-700">R$ 10</button>
+          <button type="button" onclick="setModalTrocoRecebido(20)" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 font-bold rounded-lg text-slate-700">R$ 20</button>
+          <button type="button" onclick="setModalTrocoRecebido(50)" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 font-bold rounded-lg text-slate-700">R$ 50</button>
+          <button type="button" onclick="setModalTrocoRecebido(100)" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 font-bold rounded-lg text-slate-700">R$ 100</button>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-center space-y-1">
+          <span class="text-xs uppercase font-bold tracking-wider text-emerald-800">Troco a Entregar</span>
+          <div id="modalTrocoResultado" class="text-3xl font-black text-emerald-700">R$ 0,00</div>
+          <div id="modalTrocoDetalhe" class="text-[11px] text-emerald-800 font-medium pt-1"></div>
+        </div>
+      </div>
+
+      <button onclick="closeModal('modalCalculadoraTroco')" class="w-full py-2.5 bg-slate-900 text-white font-bold text-xs rounded-xl">
+        Concluído
+      </button>
+
+    </div>
+  </div>
+
+  <!-- 5. MODAL: COMPROVANTE / CUPOM DE VENDA -->
+  <div id="modalComprovante" class="modal-backdrop fixed inset-0 bg-slate-950/70 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+    <div class="modal-box bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl border border-slate-200 space-y-4">
+      
+      <!-- Cabeçalho do Cupom -->
+      <div class="text-center pb-3 border-b border-dashed border-slate-300">
+        <div class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 mb-2">
+          <i class="fa-solid fa-check text-lg"></i>
+        </div>
+        <h3 class="font-extrabold text-slate-900 text-base">Venda Concluída!</h3>
+        <p class="text-[11px] text-slate-400 font-mono" id="cupomId">#FC-0000</p>
+        <p class="text-[11px] text-slate-500 font-mono" id="cupomDataHora"></p>
+      </div>
+
+      <!-- Itens do Cupom -->
+      <div class="space-y-2 text-xs font-mono max-h-48 overflow-y-auto pr-1" id="cupomItensList">
+        <!-- Injetado dinamicamente via JS -->
+      </div>
+
+      <!-- Totais do Cupom -->
+      <div class="pt-2 border-t border-dashed border-slate-300 text-xs font-mono space-y-1">
+        <div class="flex justify-between text-slate-600">
+          <span>Subtotal:</span>
+          <span id="cupomSubtotal">R$ 0,00</span>
+        </div>
+        <div class="flex justify-between text-slate-600" id="cupomDescontoRow">
+          <span>Desconto:</span>
+          <span id="cupomDesconto">R$ 0,00</span>
+        </div>
+        <div class="flex justify-between text-slate-900 font-bold text-sm pt-1">
+          <span>TOTAL:</span>
+          <span id="cupomTotal" class="text-emerald-700">R$ 0,00</span>
+        </div>
+        <div class="flex justify-between text-slate-600 pt-1">
+          <span>Pagamento:</span>
+          <span id="cupomFormaPagamento" class="uppercase font-semibold">DINHEIRO</span>
+        </div>
+        <div class="flex justify-between text-emerald-800 font-bold" id="cupomTrocoRow">
+          <span>Troco:</span>
+          <span id="cupomTroco">R$ 0,00</span>
+        </div>
+      </div>
+
+      <div class="pt-3 flex gap-2 no-print">
+        <button onclick="window.print()" class="flex-1 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-2">
+          <i class="fa-solid fa-print"></i> Imprimir
+        </button>
+        <button onclick="closeModal('modalComprovante')" class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl">
+          Nova Venda
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- CONTAINER DE IMPRESSÃO PURA (OCULTO EM TELA, EXIBIDO EM @media print) -->
+  <div id="printReceiptContainer" class="hidden">
+    <div style="text-align: center; border-bottom: 1px dashed #000; padding-bottom: 8px; margin-bottom: 8px;">
+      <h2 style="font-size: 16px; font-weight: bold; margin: 0;">FEIRACASH PRO</h2>
+      <p style="font-size: 11px; margin: 2px 0;">Gestão Financeira & PDV de Feiras</p>
+      <p style="font-size: 10px; margin: 0;" id="printDataEmissao"></p>
+    </div>
+    <div id="printConteudoDinamico"></div>
+    <div style="text-align: center; border-top: 1px dashed #000; padding-top: 8px; margin-top: 8px; font-size: 10px;">
+      Obrigado pela preferência! Volte sempre à nossa feira.
+    </div>
+  </div>
+
+  <!-- ==========================================
+       JAVASCRIPT ES6+ COMPLETO
+  ========================================== -->
+  <script>
+    /* =====================================================================
+       1. ESTADO GLOBAL DA APLICAÇÃO & PERSISTÊNCIA EM LOCALSTORAGE
+    ===================================================================== */
+    const STORAGE_KEYS = {
+      TRANSACTIONS: 'feiracash_v2_transactions',
+      PRODUCTS: 'feiracash_v2_products',
+      CART: 'feiracash_v2_cart',
+      SETTINGS: 'feiracash_v2_settings'
+    };
+
+    // Catálogo Inicial Padrão de Feira (se LocalStorage estiver vazio)
+    const SEED_PRODUCTS = [
+      { id: 'p1', nome: 'Pastel de Carne', categoria: 'Pastéis & Salgados', preco: 12.00, unidade: 'un', icone: '🥟' },
+      { id: 'p2', nome: 'Pastel de Queijo Especial', categoria: 'Pastéis & Salgados', preco: 12.00, unidade: 'un', icone: '🧀' },
+      { id: 'p3', nome: 'Pastel de Palmito com Catupiry', categoria: 'Pastéis & Salgados', preco: 14.00, unidade: 'un', icone: '🥟' },
+      { id: 'p4', nome: 'Caldo de Cana 500ml', categoria: 'Bebidas & Caldos', preco: 8.00, unidade: 'copo', icone: '🥤' },
+      { id: 'p5', nome: 'Suco Natural de Laranja 500ml', categoria: 'Bebidas & Caldos', preco: 10.00, unidade: 'copo', icone: '🍊' },
+      { id: 'p6', nome: 'Morango Doce Selecionado', categoria: 'Hortifruti & Orgânicos', preco: 15.00, unidade: 'bandeja', icone: '🍓' },
+      { id: 'p7', nome: 'Banana Prata Orgânica', categoria: 'Hortifruti & Orgânicos', preco: 7.50, unidade: 'kg', icone: '🍌' },
+      { id: 'p8', nome: 'Queijo Meia Cura Artesanal', categoria: 'Doces & Queijos', preco: 35.00, unidade: 'un', icone: '🧀' },
+      { id: 'p9', nome: 'Doce de Leite Cremoso 500g', categoria: 'Doces & Queijos', preco: 18.00, unidade: 'un', icone: '🍯' }
+    ];
+
+    // Transações Iniciais para Demonstração Rica
+    const SEED_TRANSACTIONS = [
+      {
+        id: 'FC-101',
+        type: 'recebimento',
+        description: 'Venda PDV: 2x Pastel de Carne, 1x Caldo de Cana',
+        amount: 32.00,
+        category: 'Pastéis & Salgados',
+        paymentMethod: 'pix',
+        date: new Date(Date.now() - 3600000 * 2).toISOString(),
+        items: [
+          { name: 'Pastel de Carne', quantity: 2, unitPrice: 12.00 },
+          { name: 'Caldo de Cana 500ml', quantity: 1, unitPrice: 8.00 }
+        ]
+      },
+      {
+        id: 'FC-102',
+        type: 'recebimento',
+        description: 'Venda PDV: 1x Queijo Meia Cura Artesanal',
+        amount: 35.00,
+        category: 'Doces & Queijos',
+        paymentMethod: 'dinheiro',
+        date: new Date(Date.now() - 3600000 * 1.5).toISOString(),
+        items: [
+          { name: 'Queijo Meia Cura Artesanal', quantity: 1, unitPrice: 35.00 }
+        ]
+      },
+      {
+        id: 'FC-103',
+        type: 'pagamento',
+        description: 'Compra de 2 sacos de gelo e copos plásticos',
+        amount: 25.00,
+        category: 'Insumos & Ingredientes',
+        paymentMethod: 'dinheiro',
+        date: new Date(Date.now() - 3600000 * 3).toISOString()
+      },
+      {
+        id: 'FC-104',
+        type: 'recebimento',
+        description: 'Venda PDV: 2x Morango Doce Selecionado',
+        amount: 30.00,
+        category: 'Hortifruti & Orgânicos',
+        paymentMethod: 'debito',
+        date: new Date(Date.now() - 3600000 * 0.8).toISOString(),
+        items: [
+          { name: 'Morango Doce Selecionado', quantity: 2, unitPrice: 15.00 }
+        ]
+      }
+    ];
+
+    // Carregamento de dados com fallback para os seeds
+    let produtos = JSON.parse(localStorage.getItem(STORAGE_KEYS.PRODUCTS)) || SEED_PRODUCTS;
+    let transacoes = JSON.parse(localStorage.getItem(STORAGE_KEYS.TRANSACTIONS)) || SEED_TRANSACTIONS;
+    let carrinho = []; // Carrinho atual do PDV
+    let pdvPagamentoSelecionado = 'dinheiro';
+    let pdvCategoriaAtiva = 'todas';
+    let lancamentoTipoSelecionado = 'recebimento';
+
+    // Instâncias do Chart.js para evitar memory leak
+    let chartCategoriasInstance = null;
+    let chartFluxoCaixaInstance = null;
+
+    // Função utilitária para salvar dados
+    function saveState() {
+      localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(produtos));
+      localStorage.setItem(STORAGE_KEYS.TRANSACTIONS, JSON.stringify(transacoes));
+    }
+
+    // Formatador oficial BRL
+    function formatBRL(val) {
+      const num = Number(val) || 0;
+      return num.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+
+    /* =====================================================================
+       2. NAVEGAÇÃO ENTRE ABAS (switchTab)
+    ===================================================================== */
+    function switchTab(tabId) {
+      // 1. Alterna classes de conteúdo
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      const target = document.getElementById(`tab-${tabId}`);
+      if (target) {
+        target.classList.add('active');
+      }
+
+      // 2. Atualiza botões do header desktop
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('bg-emerald-600', 'text-white', 'shadow-sm');
+        btn.classList.add('text-slate-300');
+      });
+      const activeHeaderBtn = document.getElementById(`btnTab-${tabId}`);
+      if (activeHeaderBtn) {
+        activeHeaderBtn.classList.remove('text-slate-300');
+        activeHeaderBtn.classList.add('bg-emerald-600', 'text-white', 'shadow-sm');
+      }
+
+      // 3. Atualiza botões da barra mobile
+      document.querySelectorAll('.mobile-nav-btn').forEach(btn => {
+        btn.classList.remove('text-emerald-400');
+        btn.classList.add('text-slate-400');
+      });
+      const activeMobileBtn = document.getElementById(`mobileNav-${tabId}`);
+      if (activeMobileBtn) {
+        activeMobileBtn.classList.remove('text-slate-400');
+        activeMobileBtn.classList.add('text-emerald-400');
+      }
+
+      // 4. Executa rotinas específicas de cada aba
+      if (tabId === 'dashboard') {
+        renderDashboard();
+      } else if (tabId === 'pdv') {
+        renderPDV();
+      } else if (tabId === 'extrato') {
+        renderExtrato();
+      } else if (tabId === 'relatorios') {
+        renderRelatorios();
+      }
+
+      // Rola para o topo suavemente
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    /* =====================================================================
+       3. CÁLCULOS E ATUALIZAÇÃO DO DASHBOARD (KPIS)
+    ===================================================================== */
+    function calcularMetricas() {
+      let totalRecebimentos = 0;
+      let totalPagamentos = 0;
+      let countRecebimentos = 0;
+      let countPagamentos = 0;
+
+      const breakdown = {
+        dinheiro: 0,
+        pix: 0,
+        debito: 0,
+        credito: 0,
+        outro: 0
+      };
+
+      transacoes.forEach(t => {
+        if (t.type === 'recebimento') {
+          totalRecebimentos += t.amount;
+          countRecebimentos++;
+          if (breakdown[t.paymentMethod] !== undefined) {
+            breakdown[t.paymentMethod] += t.amount;
+          } else {
+            breakdown.outro += t.amount;
+          }
+        } else if (t.type === 'pagamento') {
+          totalPagamentos += t.amount;
+          countPagamentos++;
+        }
+      });
+
+      const saldoLiquido = totalRecebimentos - totalPagamentos;
+      const ticketMedio = countRecebimentos > 0 ? totalRecebimentos / countRecebimentos : 0;
+
+      return {
+        totalRecebimentos,
+        totalPagamentos,
+        saldoLiquido,
+        countRecebimentos,
+        countPagamentos,
+        totalOperacoes: transacoes.length,
+        ticketMedio,
+        breakdown
+      };
+    }
+
+    function renderDashboard() {
+      const k = calcularMetricas();
+
+      // Atualiza Cards Principais
+      document.getElementById('kpiSaldoLiquido').textContent = formatBRL(k.saldoLiquido);
+      document.getElementById('kpiTotalRecebimentos').textContent = formatBRL(k.totalRecebimentos);
+      document.getElementById('kpiTotalPagamentos').textContent = formatBRL(k.totalPagamentos);
+      document.getElementById('kpiTicketMedio').textContent = formatBRL(k.ticketMedio);
+      document.getElementById('kpiTotalOperacoes').textContent = k.totalOperacoes;
+
+      document.getElementById('kpiQtdRecebimentos').textContent = `${k.countRecebimentos} vendas realizadas`;
+      document.getElementById('kpiQtdPagamentos').textContent = `${k.countPagamentos} saídas / despesas`;
+
+      // Atualiza Breakdown de Pagamentos
+      document.getElementById('payDinheiro').textContent = formatBRL(k.breakdown.dinheiro);
+      document.getElementById('payPix').textContent = formatBRL(k.breakdown.pix);
+      document.getElementById('payDebito').textContent = formatBRL(k.breakdown.debito);
+      document.getElementById('payCredito').textContent = formatBRL(k.breakdown.credito);
+
+      const totalRecebido = k.totalRecebimentos || 1;
+      document.getElementById('payDinheiroPct').textContent = `${Math.round((k.breakdown.dinheiro / totalRecebido) * 100)}% do total`;
+      document.getElementById('payPixPct').textContent = `${Math.round((k.breakdown.pix / totalRecebido) * 100)}% do total`;
+      document.getElementById('payDebitoPct').textContent = `${Math.round((k.breakdown.debito / totalRecebido) * 100)}% do total`;
+      document.getElementById('payCreditoPct').textContent = `${Math.round((k.breakdown.credito / totalRecebido) * 100)}% do total`;
+
+      // Atualiza Lista Rápida dos Últimos Lançamentos
+      const ultimas = [...transacoes].reverse().slice(0, 5);
+      const listaEl = document.getElementById('dashUltimasTransacoesList');
+
+      if (ultimas.length === 0) {
+        listaEl.innerHTML = `<tr><td colspan="4" class="py-6 text-center text-slate-400">Nenhum lançamento registrado até o momento.</td></tr>`;
+      } else {
+        listaEl.innerHTML = ultimas.map(t => {
+          const isReceb = t.type === 'recebimento';
+          const hora = new Date(t.date).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+          return `
+            <tr class="hover:bg-slate-50/80 transition-colors">
+              <td class="py-2.5 font-mono text-slate-500">${hora}</td>
+              <td class="py-2.5 font-medium text-slate-800 line-clamp-1">${t.description}</td>
+              <td class="py-2.5">
+                <span class="inline-flex items-center gap-1 uppercase font-bold text-[10px] px-2 py-0.5 rounded-full ${t.paymentMethod === 'dinheiro' ? 'bg-emerald-100 text-emerald-800' : t.paymentMethod === 'pix' ? 'bg-teal-100 text-teal-800' : 'bg-blue-100 text-blue-800'}">
+                  ${t.paymentMethod}
+                </span>
+              </td>
+              <td class="py-2.5 text-right font-bold ${isReceb ? 'text-emerald-600' : 'text-rose-600'}">
+                ${isReceb ? '+' : '-'} ${formatBRL(t.amount)}
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+    }
+
+    /* =====================================================================
+       4. CALCULADORAS DE TROCO E SUGESTÕES DE NOTAS/MOEDAS
+    ===================================================================== */
+    function decomporTroco(troco) {
+      if (troco <= 0) return '';
+      const denominations = [100, 50, 20, 10, 5, 2, 1, 0.50, 0.25, 0.10, 0.05];
+      let remaining = Math.round(troco * 100);
+      const parts = [];
+
+      for (const denom of denominations) {
+        const denomCents = Math.round(denom * 100);
+        if (remaining >= denomCents) {
+          const count = Math.floor(remaining / denomCents);
+          remaining %= denomCents;
+          const isNote = denom >= 2;
+          parts.push(`${count}x ${isNote ? 'Nota' : 'Moeda'} de R$ ${denom.toFixed(2).replace('.', ',')}`);
+        }
+      }
+      return parts.length > 0 ? `Sugestão: ${parts.slice(0, 3).join(', ')}` : '';
+    }
+
+    // Calculadora rápida no Dashboard
+    function calcTrocoDash() {
+      const total = parseFloat(document.getElementById('calcDashTotal').value) || 0;
+      const recebido = parseFloat(document.getElementById('calcDashRecebido').value) || 0;
+      const trocoEl = document.getElementById('calcDashTroco');
+      const sugestaoEl = document.getElementById('calcDashSugestao');
+
+      if (total <= 0 || recebido <= 0) {
+        trocoEl.textContent = 'R$ 0,00';
+        sugestaoEl.textContent = 'Aguardando valores...';
+        return;
+      }
+
+      const troco = recebido - total;
+      if (troco < 0) {
+        trocoEl.textContent = 'Faltam ' + formatBRL(Math.abs(troco));
+        trocoEl.classList.add('text-rose-600');
+        trocoEl.classList.remove('text-emerald-700');
+        sugestaoEl.textContent = 'Valor recebido menor que o total!';
+      } else {
+        trocoEl.textContent = formatBRL(troco);
+        trocoEl.classList.remove('text-rose-600');
+        trocoEl.classList.add('text-emerald-700');
+        sugestaoEl.textContent = troco === 0 ? 'Pagamento exato, sem troco.' : decomporTroco(troco);
+      }
+    }
+
+    function setCalcRecebido(val) {
+      document.getElementById('calcDashRecebido').value = val.toFixed(2);
+      calcTrocoDash();
+    }
+
+    // Calculadora do Modal
+    function calcularTrocoModal() {
+      const total = parseFloat(document.getElementById('modalTrocoTotal').value) || 0;
+      const recebido = parseFloat(document.getElementById('modalTrocoRecebido').value) || 0;
+      const resEl = document.getElementById('modalTrocoResultado');
+      const detEl = document.getElementById('modalTrocoDetalhe');
+
+      if (recebido < total) {
+        resEl.textContent = 'Faltam ' + formatBRL(total - recebido);
+        resEl.classList.add('text-rose-600');
+        detEl.textContent = 'Valor insuficiente';
+      } else {
+        const troco = recebido - total;
+        resEl.textContent = formatBRL(troco);
+        resEl.classList.remove('text-rose-600');
+        detEl.textContent = troco === 0 ? 'Pagamento exato!' : decomporTroco(troco);
+      }
+    }
+
+    function setModalTrocoRecebido(val) {
+      document.getElementById('modalTrocoRecebido').value = val.toFixed(2);
+      calcularTrocoModal();
+    }
+
+    /* =====================================================================
+       5. MÓDULO DE PDV (CAIXA RÁPIDO & COMANDA)
+    ===================================================================== */
+    function renderPDV() {
+      renderCategoriasPDV();
+      renderCatalogoPDV();
+      renderCarrinho();
+    }
+
+    function renderCategoriasPDV() {
+      const cats = ['todas', ...new Set(produtos.map(p => p.categoria))];
+      const container = document.getElementById('pdvCategoryFilterContainer');
+
+      container.innerHTML = cats.map(c => `
+        <button type="button" onclick="filtrarCategoriaPDV('${c}')" class="px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${pdvCategoriaAtiva === c ? 'bg-emerald-600 text-white shadow-xs' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'}">
+          ${c === 'todas' ? 'Todas' : c}
+        </button>
+      `).join('');
+    }
+
+    function filtrarCategoriaPDV(cat) {
+      pdvCategoriaAtiva = cat;
+      renderCategoriasPDV();
+      renderCatalogoPDV();
+    }
+
+    function filtrarProdutosPDV() {
+      renderCatalogoPDV();
+    }
+
+    function renderCatalogoPDV() {
+      const query = (document.getElementById('pdvSearchInput')?.value || '').toLowerCase().trim();
+      const grid = document.getElementById('pdvProductGrid');
+
+      const filtrados = produtos.filter(p => {
+        const matchCat = pdvCategoriaAtiva === 'todas' || p.categoria === pdvCategoriaAtiva;
+        const matchQuery = !query || p.nome.toLowerCase().includes(query) || p.categoria.toLowerCase().includes(query);
+        return matchCat && matchQuery;
+      });
+
+      document.getElementById('pdvContadorProdutos').textContent = `Catálogo (${filtrados.length} produtos)`;
+
+      if (filtrados.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full py-12 text-center text-slate-400">
+            <i class="fa-solid fa-box-open text-3xl mb-2"></i>
+            <p>Nenhum produto encontrado com esses critérios.</p>
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = filtrados.map(p => `
+        <div onclick="adicionarAoCarrinho('${p.id}')" class="bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-200 hover:border-emerald-500 shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col justify-between group active:scale-[0.98]">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-2xl">${p.icone || '📦'}</span>
+              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-100 px-2 py-0.5 rounded-full">${p.unidade}</span>
+            </div>
+            <h4 class="font-bold text-slate-800 text-xs sm:text-sm line-clamp-2 leading-snug group-hover:text-emerald-700 transition-colors">${p.nome}</h4>
+          </div>
+
+          <div class="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between">
+            <strong class="text-emerald-600 font-extrabold text-sm sm:text-base">${formatBRL(p.preco)}</strong>
+            <button class="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-700 group-hover:bg-emerald-600 group-hover:text-white flex items-center justify-center text-xs transition-colors">
+              <i class="fa-solid fa-plus"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Gestão do Carrinho
+    function adicionarAoCarrinho(prodId) {
+      const prod = produtos.find(p => p.id === prodId);
+      if (!prod) return;
+
+      const itemExistente = carrinho.find(i => i.id === prodId);
+      if (itemExistente) {
+        itemExistente.quantity += 1;
+      } else {
+        carrinho.push({
+          id: prod.id,
+          nome: prod.nome,
+          preco: prod.preco,
+          unidade: prod.unidade,
+          icone: prod.icone,
+          quantity: 1
+        });
+      }
+      renderCarrinho();
+    }
+
+    function alterarQtdCarrinho(prodId, delta) {
+      const idx = carrinho.findIndex(i => i.id === prodId);
+      if (idx === -1) return;
+
+      carrinho[idx].quantity += delta;
+      if (carrinho[idx].quantity <= 0) {
+        carrinho.splice(idx, 1);
+      }
+      renderCarrinho();
+    }
+
+    function removerDoCarrinho(prodId) {
+      carrinho = carrinho.filter(i => i.id !== prodId);
+      renderCarrinho();
+    }
+
+    function limparCarrinho() {
+      carrinho = [];
+      document.getElementById('pdvCartDesconto').value = '0.00';
+      document.getElementById('pdvValorRecebido').value = '';
+      renderCarrinho();
+    }
+
+    function renderCarrinho() {
+      const listEl = document.getElementById('pdvCartItemsList');
+
+      if (carrinho.length === 0) {
+        listEl.innerHTML = `
+          <div class="text-center py-8 text-slate-400">
+            <i class="fa-solid fa-basket-shopping text-3xl mb-2 text-slate-300"></i>
+            <p class="text-xs">Carrinho vazio no momento.</p>
+            <p class="text-[11px] text-slate-400">Clique nos produtos para adicionar.</p>
+          </div>
+        `;
+      } else {
+        listEl.innerHTML = carrinho.map(item => `
+          <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200/60 text-xs">
+            <div class="flex-1 pr-2">
+              <span class="font-bold text-slate-800 block line-clamp-1">${item.icone || ''} ${item.nome}</span>
+              <span class="text-[11px] text-slate-400">${item.quantity}x ${formatBRL(item.preco)}</span>
+            </div>
+
+            <!-- Controles de Quantidade -->
+            <div class="flex items-center gap-1">
+              <button onclick="alterarQtdCarrinho('${item.id}', -1)" class="w-6 h-6 rounded-md bg-white border border-slate-300 text-slate-700 hover:bg-slate-100 flex items-center justify-center font-bold">
+                -
+              </button>
+              <span class="w-6 text-center font-bold text-slate-800">${item.quantity}</span>
+              <button onclick="alterarQtdCarrinho('${item.id}', 1)" class="w-6 h-6 rounded-md bg-white border border-slate-300 text-slate-700 hover:bg-slate-100 flex items-center justify-center font-bold">
+                +
+              </button>
+              <button onclick="removerDoCarrinho('${item.id}')" class="ml-1 text-slate-400 hover:text-rose-600 p-1">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      atualizarTotaisCarrinho();
+    }
+
+    function getSubtotalCarrinho() {
+      return carrinho.reduce((sum, item) => sum + (item.preco * item.quantity), 0);
+    }
+
+    function getTotalCarrinho() {
+      const sub = getSubtotalCarrinho();
+      const desc = parseFloat(document.getElementById('pdvCartDesconto')?.value) || 0;
+      return Math.max(0, sub - desc);
+    }
+
+    function atualizarTotaisCarrinho() {
+      const sub = getSubtotalCarrinho();
+      const total = getTotalCarrinho();
+
+      document.getElementById('pdvCartSubtotal').textContent = formatBRL(sub);
+      document.getElementById('pdvCartTotal').textContent = formatBRL(total);
+
+      calcularTrocoPDV();
+    }
+
+    function setPdvPaymentMethod(method) {
+      pdvPagamentoSelecionado = method;
+      document.querySelectorAll('.pdv-pay-btn').forEach(btn => {
+        btn.classList.remove('active', 'border-emerald-500', 'bg-emerald-50', 'text-emerald-800');
+        btn.classList.add('border-slate-200', 'bg-slate-50', 'text-slate-700');
+      });
+
+      const activeBtn = document.getElementById(`pdvPayBtn-${method}`);
+      if (activeBtn) {
+        activeBtn.classList.add('active', 'border-emerald-500', 'bg-emerald-50', 'text-emerald-800');
+        activeBtn.classList.remove('border-slate-200', 'bg-slate-50', 'text-slate-700');
+      }
+
+      const painelTroco = document.getElementById('pdvPainelTroco');
+      if (method === 'dinheiro') {
+        painelTroco.classList.remove('hidden');
+        calcularTrocoPDV();
+      } else {
+        painelTroco.classList.add('hidden');
+      }
+    }
+
+    function calcularTrocoPDV() {
+      if (pdvPagamentoSelecionado !== 'dinheiro') return;
+
+      const total = getTotalCarrinho();
+      const recebido = parseFloat(document.getElementById('pdvValorRecebido')?.value) || 0;
+      const display = document.getElementById('pdvTrocoDisplay');
+      const notasSug = document.getElementById('pdvTrocoNotasSugestao');
+
+      if (recebido <= 0 || total <= 0) {
+        display.textContent = 'R$ 0,00';
+        notasSug.textContent = 'Digite o valor entregue pelo cliente.';
+        return;
+      }
+
+      const troco = recebido - total;
+      if (troco < 0) {
+        display.textContent = 'Faltam ' + formatBRL(Math.abs(troco));
+        display.classList.add('text-rose-700');
+        display.classList.remove('text-emerald-800');
+        notasSug.textContent = 'Valor recebido insuficiente!';
+      } else {
+        display.textContent = formatBRL(troco);
+        display.classList.remove('text-rose-700');
+        display.classList.add('text-emerald-800');
+        notasSug.textContent = troco === 0 ? 'Valor exato (sem troco)' : decomporTroco(troco);
+      }
+    }
+
+    function setPdvRecebidoExato() {
+      const total = getTotalCarrinho();
+      document.getElementById('pdvValorRecebido').value = total.toFixed(2);
+      calcularTrocoPDV();
+    }
+
+    function setPdvRecebido(val) {
+      document.getElementById('pdvValorRecebido').value = val.toFixed(2);
+      calcularTrocoPDV();
+    }
+
+    // Finalizar Venda no PDV
+    function finalizarVendaPDV() {
+      if (carrinho.length === 0) {
+        alert('O carrinho está vazio! Adicione produtos antes de finalizar.');
+        return;
+      }
+
+      const total = getTotalCarrinho();
+      const subtotal = getSubtotalCarrinho();
+      const desconto = parseFloat(document.getElementById('pdvCartDesconto').value) || 0;
+      const recebido = parseFloat(document.getElementById('pdvValorRecebido').value) || total;
+
+      if (pdvPagamentoSelecionado === 'dinheiro' && recebido < total) {
+        alert('O valor recebido é menor que o total a pagar!');
+        return;
+      }
+
+      const troco = pdvPagamentoSelecionado === 'dinheiro' ? Math.max(0, recebido - total) : 0;
+      const txId = 'FC-' + Math.floor(1000 + Math.random() * 9000);
+      const dataHora = new Date();
+
+      // Monta a descrição resumida
+      const descItens = carrinho.map(i => `${i.quantity}x ${i.nome}`).join(', ');
+      const descCompleta = `Venda PDV: ${descItens}`;
+
+      // Cria a nova transação
+      const novaTransacao = {
+        id: txId,
+        type: 'recebimento',
+        description: descCompleta,
+        amount: total,
+        category: carrinho[0]?.categoria || 'Venda Balcão',
+        paymentMethod: pdvPagamentoSelecionado,
+        date: dataHora.toISOString(),
+        items: carrinho.map(c => ({
+          name: c.nome,
+          quantity: c.quantity,
+          unitPrice: c.preco
+        }))
+      };
+
+      transacoes.push(novaTransacao);
+      saveState();
+
+      // Prepara o Cupom / Comprovante
+      exibirComprovanteVenda({
+        id: txId,
+        dataHora: dataHora.toLocaleString('pt-BR'),
+        itens: [...carrinho],
+        subtotal,
+        desconto,
+        total,
+        formaPagamento: pdvPagamentoSelecionado,
+        troco
+      });
+
+      // Limpa o carrinho e atualiza o estado
+      limparCarrinho();
+      renderDashboard();
+    }
+
+    function exibirComprovanteVenda(dados) {
+      document.getElementById('cupomId').textContent = `#${dados.id}`;
+      document.getElementById('cupomDataHora').textContent = dados.dataHora;
+
+      const itensListEl = document.getElementById('cupomItensList');
+      itensListEl.innerHTML = dados.itens.map(i => `
+        <div class="flex justify-between border-b border-slate-100 pb-1">
+          <span>${i.quantity}x ${i.nome}</span>
+          <span>${formatBRL(i.preco * i.quantity)}</span>
+        </div>
+      `).join('');
+
+      document.getElementById('cupomSubtotal').textContent = formatBRL(dados.subtotal);
+      
+      const descRow = document.getElementById('cupomDescontoRow');
+      if (dados.desconto > 0) {
+        descRow.classList.remove('hidden');
+        document.getElementById('cupomDesconto').textContent = `- ${formatBRL(dados.desconto)}`;
+      } else {
+        descRow.classList.add('hidden');
+      }
+
+      document.getElementById('cupomTotal').textContent = formatBRL(dados.total);
+      document.getElementById('cupomFormaPagamento').textContent = dados.formaPagamento.toUpperCase();
+
+      const trocoRow = document.getElementById('cupomTrocoRow');
+      if (dados.troco > 0) {
+        trocoRow.classList.remove('hidden');
+        document.getElementById('cupomTroco').textContent = formatBRL(dados.troco);
+      } else {
+        trocoRow.classList.add('hidden');
+      }
+
+      // Prepara o container oculto de impressão térmica
+      document.getElementById('printDataEmissao').textContent = dados.dataHora + ' | Cupom #' + dados.id;
+      document.getElementById('printConteudoDinamico').innerHTML = `
+        <div style="font-family: monospace; font-size: 11px;">
+          ${dados.itens.map(i => `<div style="display:flex; justify-content:space-between;"><span>${i.quantity}x ${i.nome}</span><span>${formatBRL(i.preco * i.quantity)}</span></div>`).join('')}
+          <div style="border-top:1px dashed #000; margin-top:4px; padding-top:4px;">
+            <div style="display:flex; justify-content:space-between; font-weight:bold;"><span>TOTAL:</span><span>${formatBRL(dados.total)}</span></div>
+            <div style="display:flex; justify-content:space-between;"><span>PAGAMENTO:</span><span>${dados.formaPagamento.toUpperCase()}</span></div>
+            ${dados.troco > 0 ? `<div style="display:flex; justify-content:space-between;"><span>TROCO:</span><span>${formatBRL(dados.troco)}</span></div>` : ''}
+          </div>
+        </div>
+      `;
+
+      openModal('modalComprovante');
+    }
+
+    /* =====================================================================
+       6. EXTRATO DE MOVIMENTAÇÕES
+    ===================================================================== */
+    function renderExtrato() {
+      const tipo = document.getElementById('extratoFiltroTipo')?.value || 'todos';
+      const pagamento = document.getElementById('extratoFiltroPagamento')?.value || 'todos';
+      const periodo = document.getElementById('extratoFiltroPeriodo')?.value || 'todos';
+      const busca = (document.getElementById('extratoBuscaInput')?.value || '').toLowerCase().trim();
+
+      const now = new Date();
+      const hojeStr = now.toISOString().split('T')[0];
+
+      const filtrados = transacoes.filter(t => {
+        if (tipo !== 'todos' && t.type !== tipo) return false;
+        if (pagamento !== 'todos' && t.paymentMethod !== pagamento) return false;
+        if (busca) {
+          const matchDesc = t.description.toLowerCase().includes(busca);
+          const matchCat = t.category.toLowerCase().includes(busca);
+          const matchItem = t.items?.some(it => it.name.toLowerCase().includes(busca));
+          if (!matchDesc && !matchCat && !matchItem) return false;
+        }
+        if (periodo === 'hoje') {
+          if (t.date.split('T')[0] !== hojeStr) return false;
+        } else if (periodo === 'ultimos7dias') {
+          const diffDays = (now.getTime() - new Date(t.date).getTime()) / (1000 * 60 * 60 * 24);
+          if (diffDays > 7) return false;
+        }
+        return true;
+      }).reverse(); // Mais recentes primeiro
+
+      const tbody = document.getElementById('extratoTabelaBody');
+      const alertVazio = document.getElementById('extratoVazioAlert');
+
+      // Resumo do cabeçalho
+      const totalSoma = filtrados.reduce((sum, t) => sum + (t.type === 'recebimento' ? t.amount : -t.amount), 0);
+      document.getElementById('extratoResumoContagem').textContent = `Mostrando ${filtrados.length} movimentações`;
+      document.getElementById('extratoResumoSoma').textContent = `Saldo filtrado: ${formatBRL(totalSoma)}`;
+
+      if (filtrados.length === 0) {
+        tbody.innerHTML = '';
+        alertVazio.classList.remove('hidden');
+        return;
+      }
+      alertVazio.classList.add('hidden');
+
+      tbody.innerHTML = filtrados.map(t => {
+        const isReceb = t.type === 'recebimento';
+        const d = new Date(t.date);
+        const dataFormatada = d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+        return `
+          <tr class="hover:bg-slate-50 transition-colors">
+            <td class="py-3 px-4 font-mono text-slate-500 whitespace-nowrap">${dataFormatada}</td>
+            <td class="py-3 px-4 whitespace-nowrap">
+              <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full font-bold text-[10px] uppercase ${isReceb ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">
+                <i class="fa-solid ${isReceb ? 'fa-arrow-down-long' : 'fa-arrow-up-long'}"></i>
+                ${isReceb ? 'Entrada' : 'Saída'}
+              </span>
+            </td>
+            <td class="py-3 px-4">
+              <span class="font-bold text-slate-800 block">${t.description}</span>
+              ${t.items && t.items.length > 0 ? `<span class="text-[11px] text-slate-400 block">${t.items.map(it => `${it.quantity}x ${it.name}`).join(' • ')}</span>` : ''}
+            </td>
+            <td class="py-3 px-4 whitespace-nowrap">
+              <span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md font-semibold text-[11px]">${t.category}</span>
+            </td>
+            <td class="py-3 px-4 whitespace-nowrap">
+              <span class="inline-flex items-center gap-1 uppercase font-bold text-[10px] px-2 py-0.5 rounded-full ${t.paymentMethod === 'dinheiro' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : t.paymentMethod === 'pix' ? 'bg-teal-50 text-teal-700 border border-teal-200' : 'bg-blue-50 text-blue-700 border border-blue-200'}">
+                ${t.paymentMethod}
+              </span>
+            </td>
+            <td class="py-3 px-4 text-right font-extrabold whitespace-nowrap text-sm ${isReceb ? 'text-emerald-600' : 'text-rose-600'}">
+              ${isReceb ? '+' : '-'} ${formatBRL(t.amount)}
+            </td>
+            <td class="py-3 px-4 text-center whitespace-nowrap no-print">
+              <button onclick="excluirTransacao('${t.id}')" title="Excluir Lançamento" class="text-slate-400 hover:text-rose-600 p-1.5 transition-colors">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function excluirTransacao(id) {
+      if (confirm('Tem certeza de que deseja excluir este lançamento? Esta ação recalculará o caixa.')) {
+        transacoes = transacoes.filter(t => t.id !== id);
+        saveState();
+        renderExtrato();
+        renderDashboard();
+      }
+    }
+
+    /* =====================================================================
+       7. RELATÓRIOS & GRÁFICOS (CHART.JS)
+    ===================================================================== */
+    function renderRelatorios() {
+      const k = calcularMetricas();
+
+      document.getElementById('relatorioTotalEntradas').textContent = `Entradas: ${formatBRL(k.totalRecebimentos)}`;
+      document.getElementById('relatorioTotalSaidas').textContent = `Saídas: ${formatBRL(k.totalPagamentos)}`;
+
+      // Métricas de Desempenho
+      // 1. Produto mais vendido
+      const countProdutos = {};
+      transacoes.forEach(t => {
+        if (t.items) {
+          t.items.forEach(it => {
+            countProdutos[it.name] = (countProdutos[it.name] || 0) + it.quantity;
+          });
+        }
+      });
+      let topProd = '-';
+      let topQtd = 0;
+      for (const [nome, qtd] of Object.entries(countProdutos)) {
+        if (qtd > topQtd) {
+          topQtd = qtd;
+          topProd = nome;
+        }
+      }
+      document.getElementById('relatorioTopProduto').textContent = topProd;
+      document.getElementById('relatorioTopProdutoQtd').textContent = `${topQtd} unidades vendidas`;
+
+      // 2. Forma preferida
+      let topPay = 'Dinheiro';
+      let topPayValor = k.breakdown.dinheiro;
+      if (k.breakdown.pix > topPayValor) { topPay = 'Pix'; topPayValor = k.breakdown.pix; }
+      if (k.breakdown.debito > topPayValor) { topPay = 'Débito'; topPayValor = k.breakdown.debito; }
+      if (k.breakdown.credito > topPayValor) { topPay = 'Crédito'; topPayValor = k.breakdown.credito; }
+      document.getElementById('relatorioTopPagamento').textContent = topPay.toUpperCase();
+      document.getElementById('relatorioTopPagamentoValor').textContent = `${formatBRL(topPayValor)} arrecadados`;
+
+      // 3. Taxa em dinheiro vivo
+      const pctDinheiro = k.totalRecebimentos > 0 ? Math.round((k.breakdown.dinheiro / k.totalRecebimentos) * 100) : 0;
+      document.getElementById('relatorioPctDinheiro').textContent = `${pctDinheiro}%`;
+
+      // Renderiza Gráfico 1: Rosca (Donut) de Categorias
+      renderChartCategorias();
+
+      // Renderiza Gráfico 2: Fluxo de Caixa (Entradas vs Saídas)
+      renderChartFluxoCaixa(k.totalRecebimentos, k.totalPagamentos);
+    }
+
+    function renderChartCategorias() {
+      const catTotals = {};
+      transacoes.forEach(t => {
+        if (t.type === 'recebimento') {
+          catTotals[t.category] = (catTotals[t.category] || 0) + t.amount;
+        }
+      });
+
+      const labels = Object.keys(catTotals);
+      const data = Object.values(catTotals);
+
+      const ctx = document.getElementById('chartCategorias')?.getContext('2d');
+      if (!ctx) return;
+
+      if (chartCategoriasInstance) {
+        chartCategoriasInstance.destroy();
+      }
+
+      if (labels.length === 0) {
+        labels.push('Sem Vendas');
+        data.push(1);
+      }
+
+      const colors = ['#10b981', '#06b6d4', '#f59e0b', '#8b5cf6', '#ec4899', '#64748b'];
+
+      chartCategoriasInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels,
+          datasets: [{
+            data,
+            backgroundColor: colors.slice(0, labels.length),
+            borderWidth: 2,
+            borderColor: '#ffffff'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                boxWidth: 12,
+                font: { family: 'Plus Jakarta Sans', size: 11, weight: 'bold' }
+              }
+            }
+          },
+          cutout: '65%'
+        }
+      });
+    }
+
+    function renderChartFluxoCaixa(entradas, saídas) {
+      const ctx = document.getElementById('chartFluxoCaixa')?.getContext('2d');
+      if (!ctx) return;
+
+      if (chartFluxoCaixaInstance) {
+        chartFluxoCaixaInstance.destroy();
+      }
+
+      chartFluxoCaixaInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['Entradas (Recebimentos)', 'Saídas (Pagamentos)'],
+          datasets: [{
+            data: [entradas, saídas],
+            backgroundColor: ['#10b981', '#f43f5e'],
+            borderRadius: 12,
+            maxBarThickness: 60
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                callback: function(val) {
+                  return 'R$ ' + val;
+                },
+                font: { family: 'Plus Jakarta Sans', size: 10 }
+              },
+              grid: { color: '#f1f5f9' }
+            },
+            x: {
+              grid: { display: false },
+              ticks: { font: { family: 'Plus Jakarta Sans', size: 11, weight: 'bold' } }
+            }
+          }
+        }
+      });
+    }
+
+    /* =====================================================================
+       8. EXPORTAÇÃO CSV COM SUPORTE EXCEL (UTF-8 BOM)
+    ===================================================================== */
+    function exportCSV() {
+      if (transacoes.length === 0) {
+        alert('Não há transações para exportar.');
+        return;
+      }
+
+      const headers = ['ID', 'Data/Hora', 'Tipo', 'Descricao', 'Categoria', 'Forma_Pagamento', 'Valor_BRL'];
+      const rows = transacoes.map(t => {
+        const d = new Date(t.date);
+        const dataFormatada = d.toLocaleString('pt-BR');
+        const valorFormatado = t.amount.toFixed(2).replace('.', ',');
+        const descLimpa = `"${t.description.replace(/"/g, '""')}"`;
+        return [t.id, dataFormatada, t.type.toUpperCase(), descLimpa, t.category, t.paymentMethod.toUpperCase(), valorFormatado].join(';');
+      });
+
+      const csvContent = [headers.join(';'), ...rows].join('\r\n');
+
+      // Adiciona o byte order mark (BOM) \uFEFF para Excel não desconfigurar acentos (ç, ã, é)
+      const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      const dataHoje = new Date().toISOString().split('T')[0];
+      link.setAttribute('href', url);
+      link.setAttribute('download', `feiracash_extrato_${dataHoje}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    /* =====================================================================
+       9. MODAIS & FORMULÁRIOS
+    ===================================================================== */
+    function openModal(id) {
+      const modal = document.getElementById(id);
+      if (modal) {
+        modal.classList.add('open');
+        document.body.style.overflow = 'hidden';
+      }
+    }
+
+    function closeModal(id) {
+      const modal = document.getElementById(id);
+      if (modal) {
+        modal.classList.remove('open');
+        document.body.style.overflow = '';
+      }
+    }
+
+    // Modal Zerar Caixa
+    function openModalZerarCaixa() {
+      const k = calcularMetricas();
+      document.getElementById('modalZerarTotalRecebido').textContent = formatBRL(k.totalRecebimentos);
+      document.getElementById('modalZerarTotalPago').textContent = formatBRL(k.totalPagamentos);
+      document.getElementById('modalZerarSaldoFinal').textContent = formatBRL(k.saldoLiquido);
+      document.getElementById('modalZerarDinheiroGaveta').textContent = formatBRL(k.breakdown.dinheiro);
+      openModal('modalZerarCaixa');
+    }
+
+    function confirmarZerarCaixa() {
+      transacoes = [];
+      saveState();
+      closeModal('modalZerarCaixa');
+      renderDashboard();
+      renderExtrato();
+      alert('Caixa zerado com sucesso para um novo turno ou dia de feira!');
+    }
+
+    // Modal Novo Produto
+    function openModalNovoProduto() {
+      document.getElementById('formNovoProduto').reset();
+      document.getElementById('prodIcone').value = '🥟';
+      openModal('modalNovoProduto');
+    }
+
+    function setProdEmoji(emoji) {
+      document.getElementById('prodIcone').value = emoji;
+    }
+
+    function salvarNovoProduto(e) {
+      e.preventDefault();
+      const nome = document.getElementById('prodNome').value.trim();
+      const preco = parseFloat(document.getElementById('prodPreco').value) || 0;
+      const unidade = document.getElementById('prodUnidade').value;
+      const categoria = document.getElementById('prodCategoria').value;
+      const icone = document.getElementById('prodIcone').value.trim() || '📦';
+
+      if (!nome || preco <= 0) {
+        alert('Por favor, informe um nome válido e um preço maior que zero.');
+        return;
+      }
+
+      const novoProduto = {
+        id: 'p_' + Date.now(),
+        nome,
+        preco,
+        unidade,
+        categoria,
+        icone
+      };
+
+      produtos.push(novoProduto);
+      saveState();
+      closeModal('modalNovoProduto');
+      renderPDV();
+    }
+
+    // Modal Lançamento Manual
+    function openModalLancamento() {
+      document.getElementById('formLancamento').reset();
+      setLancTipo('recebimento');
+      openModal('modalLancamento');
+    }
+
+    function setLancTipo(tipo) {
+      lancamentoTipoSelecionado = tipo;
+      const btnReceb = document.getElementById('btnLancTipo-recebimento');
+      const btnPago = document.getElementById('btnLancTipo-pagamento');
+
+      if (tipo === 'recebimento') {
+        btnReceb.className = 'py-2.5 rounded-xl font-bold border border-emerald-600 bg-emerald-50 text-emerald-700 flex items-center justify-center gap-2';
+        btnPago.className = 'py-2.5 rounded-xl font-bold border border-slate-200 bg-slate-50 text-slate-600 flex items-center justify-center gap-2';
+      } else {
+        btnPago.className = 'py-2.5 rounded-xl font-bold border border-rose-600 bg-rose-50 text-rose-700 flex items-center justify-center gap-2';
+        btnReceb.className = 'py-2.5 rounded-xl font-bold border border-slate-200 bg-slate-50 text-slate-600 flex items-center justify-center gap-2';
+      }
+    }
+
+    function salvarLancamentoManual(e) {
+      e.preventDefault();
+      const desc = document.getElementById('lancDescricao').value.trim();
+      const valor = parseFloat(document.getElementById('lancValor').value) || 0;
+      const pagto = document.getElementById('lancPagamento').value;
+      const cat = document.getElementById('lancCategoria').value;
+
+      if (!desc || valor <= 0) {
+        alert('Informe uma descrição e um valor válido.');
+        return;
+      }
+
+      const tx = {
+        id: 'FC-' + Math.floor(1000 + Math.random() * 9000),
+        type: lancamentoTipoSelecionado,
+        description: desc,
+        amount: valor,
+        category: cat,
+        paymentMethod: pagto,
+        date: new Date().toISOString()
+      };
+
+      transacoes.push(tx);
+      saveState();
+      closeModal('modalLancamento');
+      renderDashboard();
+      renderExtrato();
+    }
+
+    // Modal Troco Rápido
+    function openModalCalculadoraTroco() {
+      document.getElementById('modalTrocoTotal').value = '';
+      document.getElementById('modalTrocoRecebido').value = '';
+      document.getElementById('modalTrocoResultado').textContent = 'R$ 0,00';
+      document.getElementById('modalTrocoDetalhe').textContent = '';
+      openModal('modalCalculadoraTroco');
+    }
+
+    /* =====================================================================
+       10. INICIALIZAÇÃO DA APLICAÇÃO
+    ===================================================================== */
+    window.addEventListener('DOMContentLoaded', () => {
+      // Data atual no header
+      const dataEl = document.getElementById('dataAtualBadge');
+      if (dataEl) {
+        const hoje = new Date();
+        dataEl.textContent = hoje.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short' });
+      }
+
+      // Fecha modais com clique fora
+      document.querySelectorAll('.modal-backdrop').forEach(modal => {
+        modal.addEventListener('click', (e) => {
+          if (e.target === modal) {
+            closeModal(modal.id);
+          }
+        });
+      });
+
+      // Fecha modais com ESC
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          document.querySelectorAll('.modal-backdrop.open').forEach(m => closeModal(m.id));
+        }
+      });
+
+      // Inicializa Dashboard
+      renderDashboard();
+    });
+  </script>
+</body>
+</html>
